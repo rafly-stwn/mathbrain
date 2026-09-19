@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* ── Theme tokens (Tailwind v4) ── */
+@theme {
+  --color-lavender: #B8A9E8;
+  --color-peach: #FFB5A7;
+  --color-mint: #A8E6CF;
+  --color-sky: #A8D8EA;
+  --color-lemon: #FFE5A0;
+  --color-rose: #F4BFDB;
+  --color-cream: #FFF9F5;
+  --color-charcoal: #2D3436;
+  --color-warmgray: #636E72;
+  --color-success: #B5E8B5;
+  --color-error: #F5A0A0;
+
+  --radius-card: 20px;
+  --radius-button: 12px;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.1);
+
+  --font-sans: 'Nunito', sans-serif;
+}
+
+/* ── Base ── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ── Utilities ── */
+@layer utilities {
+  .blob {
+    position: absolute;
+    border-radius: 9999px;
+    opacity: 0.3;
+    filter: blur(64px);
+    pointer-events: none;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-lavender);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sky);
+}
