@@ -51,7 +51,7 @@ interface DuelState {
   joinRoom: (code: string) => Promise<void>;
   startGame: () => void;
   updateMyScore: (score: number, streak: number, progress?: number) => void;
-  sendBoardMove: (moveData: any, myNewScore: number) => void;
+  sendBoardMove: (moveData: any, myNewScore: number, explicitNextTurnId?: string) => void;
   finishMyGame: (score: number, stats?: any) => void;
   forfeitMyGame: () => void;
   requestRematch: () => void;
@@ -344,12 +344,12 @@ export const useDuelStore = create<DuelState>()(
           }
         },
         
-        sendBoardMove: (moveData: any, myNewScore: number) => {
+        sendBoardMove: (moveData: any, myNewScore: number, explicitNextTurnId?: string) => {
           const myId = peerService.getMyId();
           const myName = get().playerName;
           const isHost = get().isHost;
           const opponent = get().players.find(p => p.id !== myId && p.name !== myName);
-          const nextTurnId = opponent?.id || (isHost ? 'guest' : 'host');
+          const nextTurnId = explicitNextTurnId || opponent?.id || (isHost ? 'guest' : 'host');
 
           set({
             currentTurnPlayerId: nextTurnId,

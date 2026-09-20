@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles } from 'lucide-react';
 
@@ -25,8 +25,12 @@ export default function JokerNotificationModal({ isOpen, onClose }: JokerNotific
   return (
     <AnimatePresence>
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
+        <motion.div
+          key="joker-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -84,7 +88,7 @@ export default function JokerNotificationModal({ isOpen, onClose }: JokerNotific
               Otomatis menutup dalam 4 detik atau klik di luar
             </p>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

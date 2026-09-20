@@ -21,7 +21,7 @@ export function useMathScrabble() {
   const [passesCount, setPassesCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(1200); // 20:00 default
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
-  const [showJokerToast, setShowJokerToast] = useState(false);
+  const [showJokerModal, setShowJokerModal] = useState(false);
   const seenJokerIdsRef = useRef<Set<string>>(new Set());
 
   const addScore = useGameStore(state => state.addScore);
@@ -72,7 +72,7 @@ export function useMathScrabble() {
     const newJokers = rack.filter(t => (t.isJoker || t.char === '★') && !seenJokerIdsRef.current.has(t.id));
     if (newJokers.length > 0) {
       newJokers.forEach(j => seenJokerIdsRef.current.add(j.id));
-      setShowJokerToast(true);
+      setShowJokerModal(true);
     }
   }, [rack, phase]);
 
@@ -117,7 +117,7 @@ export function useMathScrabble() {
   const selectRackTile = useCallback((tile: Tile) => {
     soundService.playClick();
     if (tile.isJoker || tile.char === '★') {
-      setShowJokerToast(false);
+      setShowJokerModal(false);
     }
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
   }, []);
@@ -129,7 +129,7 @@ export function useMathScrabble() {
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
-    setShowJokerToast(false);
+    setShowJokerModal(false);
     soundService.playTilePlace();
     const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
     setPendingPlacements(newPlacements);
@@ -290,7 +290,7 @@ export function useMathScrabble() {
     exchangeTiles,
     passTurn,
     setPhase,
-    showJokerToast,
-    setShowJokerToast,
+    showJokerModal,
+    setShowJokerModal,
   };
 }

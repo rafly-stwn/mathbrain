@@ -452,13 +452,15 @@ export default function DuelArena() {
                 difficulty={difficulty}
                 seed={seed}
                 myId={myId}
+                opponentId={opponent?.id || ''}
                 opponentName={opponent?.name || 'Lawan'}
+                opponentFinished={Boolean(opponent?.isFinished)}
                 isMyTurn={isMyTurn}
                 currentTurnPlayerId={currentTurnPlayerId}
                 lastBoardMove={lastBoardMove}
                 matchDuration={matchDuration}
-                onSendBoardMove={(moveData, newScore) => {
-                  sendBoardMove(moveData, newScore);
+                onSendBoardMove={(moveData, newScore, explicitNextTurnId) => {
+                  sendBoardMove(moveData, newScore, explicitNextTurnId);
                 }}
                 onScoreUpdate={(newScore, newStreak, progress) => {
                   setScore(newScore);

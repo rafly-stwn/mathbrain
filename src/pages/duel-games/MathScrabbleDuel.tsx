@@ -14,19 +14,23 @@ interface MathScrabbleDuelProps {
   difficulty: Difficulty;
   seed: number;
   myId: string;
+  opponentId?: string;
   opponentName: string;
+  opponentFinished?: boolean;
   isMyTurn: boolean;
   currentTurnPlayerId: string;
   lastBoardMove: { id: string; moveData: any; score: number } | null;
   matchDuration: number;
-  onSendBoardMove: (moveData: any, newScore: number) => void;
+  onSendBoardMove: (moveData: any, newScore: number, explicitNextTurnId?: string) => void;
   onScoreUpdate: (score: number, streak: number, progress?: number) => void;
   onFinish?: (finalScore: number) => void;
 }
 
 export default function MathScrabbleDuel({
   myId,
+  opponentId,
   opponentName,
+  opponentFinished,
   isMyTurn,
   lastBoardMove,
   matchDuration = 1200,
@@ -44,13 +48,24 @@ export default function MathScrabbleDuel({
   const [lastOpponentPlacements, setLastOpponentPlacements] = useState<{ r: number; c: number }[]>([]);
 
   // Fitur 3: Notifikasi Kartu Joker & Mini-Picker saat Ditaruh
-  const [showJokerToast, setShowJokerToast] = useState(false);
+  const [showJokerModal, setShowJokerModal] = useState(false);
   const [jokerTargetCell, setJokerTargetCell] = useState<{ r: number; c: number } | null>(null);
   const seenJokerIdsRef = useRef<Set<string>>(new Set());
 
   // Dual Chess Clocks
   const [myTime, setMyTime] = useState(matchDuration);
   const [oppTime, setOppTime] = useState(matchDuration);
+
+  // Status kehabisan waktu & giliran bebas
+  const isOpponentOutOfTime = oppTime <= 0 || Boolean(opponentFinished);
+  const isMeOutOfTime = myTime <= 0;
+
+  // Bebas bermain jika lawan kehabisan waktu, atau giliran normal jika keduanya masih punya waktu
+  const effectiveIsMyTurn = useMemo(() => {
+    if (isMeOutOfTime) return false;
+    if (isOpponentOutOfTime) return true;
+    return isMyTurn;
+  }, [isMeOutOfTime, isOpponentOutOfTime, isMyTurn]);
 
   // Match Statistics (matching user requirements)
   const [score, setScore] = useState(0);
@@ -75,7 +90,7 @@ export default function MathScrabbleDuel({
     const newJokers = rack.filter(t => (t.isJoker || t.char === '★') && !seenJokerIdsRef.current.has(t.id));
     if (newJokers.length > 0) {
       newJokers.forEach(j => seenJokerIdsRef.current.add(j.id));
-      setShowJokerToast(true);
+      setShowJokerModal(true);
     }
   }, [rack]);
 
@@ -141,11 +156,23 @@ export default function MathScrabbleDuel({
   // 2. Chess clock ticker (ticks down only for the player whose turn it is)
   useEffect(() => {
     const timer = setInterval(() => {
-      if (isMyTurn) {
+      if (myTime <= 0 && oppTime <= 0) {
+        clearInterval(timer);
+        return;
+      }
+
+      if (effectiveIsMyTurn) {
         setMyTime(prev => {
           if (prev <= 1) {
-            clearInterval(timer);
-            if (onFinish) onFinish(score);
+            if (oppTime <= 0 || opponentFinished) {
+              if (onFinish) onFinish(score);
+            } else {
+              onSendBoardMove(
+                { type: 'time_out', remainingClock: 0 },
+                score,
+                opponentId
+              );
+            }
             return 0;
           }
           return prev - 1;
@@ -153,7 +180,6 @@ export default function MathScrabbleDuel({
       } else {
         setOppTime(prev => {
           if (prev <= 1) {
-            clearInterval(timer);
             return 0;
           }
           return prev - 1;
@@ -162,7 +188,16 @@ export default function MathScrabbleDuel({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isMyTurn, score, onFinish]);
+  }, [effectiveIsMyTurn, myTime, oppTime, opponentFinished, score, onFinish, onSendBoardMove, opponentId]);
+
+  // Pantau jika kedua pemain sudah kehabisan waktu
+  useEffect(() => {
+    if (myTime <= 0 && (oppTime <= 0 || opponentFinished)) {
+      if (onFinish) {
+        onFinish(score);
+      }
+    }
+  }, [myTime, oppTime, opponentFinished, onFinish, score]);
 
   // 3. Handle incoming moves from opponent
   const prevMoveRef = useRef<any>(null);
@@ -177,7 +212,13 @@ export default function MathScrabbleDuel({
         setOppTime(remainingClock);
       }
 
-      if (type === 'play' && Array.isArray(placements)) {
+      if (type === 'time_out') {
+        setOppTime(0);
+        setFeedbackMsg({
+          type: 'info',
+          text: `Waktu ${opponentName} telah habis! Kamu bebas bermain hingga waktumu selesai.`,
+        });
+      } else if (type === 'play' && Array.isArray(placements)) {
         soundService.playTilePlace();
         // Fitur 2: Simpan posisi langkah lawan untuk efek highlight ubin menyala
         setLastOpponentPlacements(placements.map((p: Placement) => ({ r: p.r, c: p.c })));
@@ -196,52 +237,52 @@ export default function MathScrabbleDuel({
         setTurn(prev => prev + 1);
         setFeedbackMsg({
           type: 'info',
-          text: `${opponentName} memainkan ${placements.length} kartu (+${lastBoardMove.score} pts). Giliran Anda!`,
+          text: `${opponentName} memainkan ${placements.length} kartu (+${lastBoardMove.score} pts). ${isOpponentOutOfTime ? 'Kamu bebas bermain!' : 'Giliran Anda!'}`,
         });
       } else if (type === 'exchange') {
         soundService.playExchange();
         setZeroMoves(prev => prev + 1);
         setTurn(prev => prev + 1);
-        setFeedbackMsg({ type: 'info', text: `${opponentName} menukar kartu. Giliran Anda!` });
+        setFeedbackMsg({ type: 'info', text: `${opponentName} menukar kartu. ${isOpponentOutOfTime ? 'Kamu bebas bermain!' : 'Giliran Anda!'}` });
       } else if (type === 'pass') {
         soundService.playPass();
         setZeroMoves(prev => prev + 1);
         setPassesCount(prev => prev + 1);
         setTurn(prev => prev + 1);
-        setFeedbackMsg({ type: 'info', text: `${opponentName} melewatkan giliran. Giliran Anda!` });
+        setFeedbackMsg({ type: 'info', text: `${opponentName} melewatkan giliran. ${isOpponentOutOfTime ? 'Kamu bebas bermain!' : 'Giliran Anda!'}` });
       }
 
       if (zeroMoves + 1 >= MAX_ZERO_MOVES && onFinish) {
         onFinish(score);
       }
     }
-  }, [lastBoardMove, myId, opponentName, score, zeroMoves, onFinish]);
+  }, [lastBoardMove, myId, opponentName, score, zeroMoves, isOpponentOutOfTime, onFinish]);
 
   // Tile Selection on Rack
   const selectRackTile = useCallback((tile: Tile) => {
-    if (!isMyTurn) return;
+    if (!effectiveIsMyTurn) return;
     soundService.playClick();
     if (tile.isJoker || tile.char === '★') {
-      setShowJokerToast(false);
+      setShowJokerModal(false);
     }
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
-  }, [isMyTurn]);
+  }, [effectiveIsMyTurn]);
 
   // Place Tile on Board (supports overrideTile for Joker selection)
   const placeTile = useCallback((r: number, c: number, overrideTile?: Tile) => {
     const tileToPlace = overrideTile || selectedRackTile;
-    if (!isMyTurn || !tileToPlace) return;
+    if (!effectiveIsMyTurn || !tileToPlace) return;
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
-    setShowJokerToast(false);
+    setShowJokerModal(false);
     soundService.playTilePlace();
     setLastOpponentPlacements([]); // Clear highlight when player moves
     const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
     setPendingPlacements(newPlacements);
     setRack(prev => prev.filter(t => t.id !== tileToPlace.id));
     setSelectedRackTile(null);
-  }, [isMyTurn, selectedRackTile, board, pendingPlacements]);
+  }, [effectiveIsMyTurn, selectedRackTile, board, pendingPlacements]);
 
   // Recall single placed tile
   const recallTile = useCallback((r: number, c: number) => {
@@ -271,7 +312,7 @@ export default function MathScrabbleDuel({
 
   // Action: Mainkan (Play Move)
   const handlePlayMove = useCallback(() => {
-    if (!isMyTurn) return;
+    if (!effectiveIsMyTurn) return;
     if (pendingPlacements.length === 0) {
       soundService.playWrong();
       setFeedbackMsg({ type: 'error', text: 'Letakkan kartu ubin ke papan terlebih dahulu!' });
@@ -320,24 +361,26 @@ export default function MathScrabbleDuel({
     });
 
     onScoreUpdate(newScore, 1);
+    const nextTurnTarget = isOpponentOutOfTime ? myId : opponentId;
     onSendBoardMove(
       {
         type: 'play',
         placements: pendingPlacements,
         remainingClock: myTime,
       },
-      newScore
+      newScore,
+      nextTurnTarget
     );
 
     // Game over check
     if (remaining.length === 0 && newRack.length === 0 && onFinish) {
       onFinish(newScore);
     }
-  }, [isMyTurn, pendingPlacements, board, score, rack, tileBag, myTime, onScoreUpdate, onSendBoardMove, onFinish]);
+  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, pendingPlacements, board, score, rack, tileBag, myTime, onScoreUpdate, onSendBoardMove, onFinish]);
 
   // Action: Tukar (Exchange Tiles)
   const handleExchangeConfirm = useCallback(() => {
-    if (!isMyTurn || selectedForExchange.length === 0) return;
+    if (!effectiveIsMyTurn || selectedForExchange.length === 0) return;
     soundService.playExchange();
     recallAllTiles();
 
@@ -356,23 +399,25 @@ export default function MathScrabbleDuel({
     setExchangeMode(false);
     setFeedbackMsg({ type: 'info', text: `${tilesToReturn.length} kartu berhasil ditukar.` });
 
+    const nextTurnTarget = isOpponentOutOfTime ? myId : opponentId;
     onSendBoardMove(
       {
         type: 'exchange',
         count: tilesToReturn.length,
         remainingClock: myTime,
       },
-      score
+      score,
+      nextTurnTarget
     );
 
     if (zeroMoves + 1 >= MAX_ZERO_MOVES && onFinish) {
       onFinish(score);
     }
-  }, [isMyTurn, selectedForExchange, rack, tileBag, myTime, score, zeroMoves, recallAllTiles, onSendBoardMove, onFinish]);
+  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, selectedForExchange, rack, tileBag, myTime, score, zeroMoves, recallAllTiles, onSendBoardMove, onFinish]);
 
   // Action: Lewat (Pass Turn)
   const handlePassTurn = useCallback(() => {
-    if (!isMyTurn) return;
+    if (!effectiveIsMyTurn) return;
     soundService.playPass();
     recallAllTiles();
 
@@ -384,18 +429,20 @@ export default function MathScrabbleDuel({
     setTurn(prev => prev + 1);
     setFeedbackMsg({ type: 'info', text: 'Giliran dilewati.' });
 
+    const nextTurnTarget = isOpponentOutOfTime ? myId : opponentId;
     onSendBoardMove(
       {
         type: 'pass',
         remainingClock: myTime,
       },
-      score
+      score,
+      nextTurnTarget
     );
 
     if (newZero >= MAX_ZERO_MOVES && onFinish) {
       onFinish(score);
     }
-  }, [isMyTurn, zeroMoves, passesCount, score, myTime, recallAllTiles, onSendBoardMove, onFinish]);
+  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, zeroMoves, passesCount, score, myTime, recallAllTiles, onSendBoardMove, onFinish]);
 
   return (
     <motion.div
@@ -410,7 +457,7 @@ export default function MathScrabbleDuel({
           {/* Player 1 (Kamu) Chess Clock */}
           <div
             className={`rounded-xl p-2 sm:p-2.5 border transition-all flex flex-col justify-between ${
-              isMyTurn
+              effectiveIsMyTurn
                 ? 'bg-mint/20 border-mint ring-2 ring-mint/30 shadow-xs'
                 : 'bg-cream/50 border-warmgray/15'
             }`}
@@ -418,7 +465,11 @@ export default function MathScrabbleDuel({
             {/* Baris 1: Nama & Status (Giliran / Menunggu) */}
             <div className="flex items-center justify-between gap-1 mb-1">
               <span className="text-xs sm:text-sm font-black text-charcoal">Kamu</span>
-              {isMyTurn ? (
+              {isMeOutOfTime ? (
+                <span className="text-[9.5px] sm:text-[10px] px-1.5 py-0.5 bg-error/20 text-error rounded-pill font-black leading-none">
+                  Waktu Habis
+                </span>
+              ) : effectiveIsMyTurn ? (
                 <span className="text-[9.5px] sm:text-[10px] px-1.5 py-0.5 bg-mint text-charcoal rounded-pill font-black animate-pulse flex items-center gap-1 leading-none shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-charcoal"></span> Giliran
                 </span>
@@ -429,9 +480,9 @@ export default function MathScrabbleDuel({
 
             {/* Baris 2: Timer di Bawah Nama */}
             <div className={`text-base sm:text-xl font-black font-mono flex items-center gap-1.5 ${
-              isMyTurn ? 'text-charcoal' : 'text-warmgray'
+              effectiveIsMyTurn ? 'text-charcoal' : 'text-warmgray'
             }`}>
-              <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isMyTurn ? 'text-charcoal animate-spin' : 'text-warmgray/40'}`} />
+              <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${effectiveIsMyTurn ? 'text-charcoal animate-spin' : 'text-warmgray/40'}`} />
               <span>{formatClock(myTime)}</span>
             </div>
           </div>
@@ -439,7 +490,7 @@ export default function MathScrabbleDuel({
           {/* Player 2 (Lawan) Chess Clock */}
           <div
             className={`rounded-xl p-2 sm:p-2.5 border transition-all flex flex-col justify-between ${
-              !isMyTurn
+              !effectiveIsMyTurn && !isOpponentOutOfTime
                 ? 'bg-sky/20 border-sky ring-2 ring-sky/30 shadow-xs'
                 : 'bg-cream/50 border-warmgray/15'
             }`}
@@ -447,7 +498,11 @@ export default function MathScrabbleDuel({
             {/* Baris 1: Nama & Status (Giliran / Menunggu) */}
             <div className="flex items-center justify-between gap-1 mb-1">
               <span className="text-xs sm:text-sm font-black text-charcoal truncate max-w-[75px] sm:max-w-[130px]">{opponentName}</span>
-              {!isMyTurn ? (
+              {isOpponentOutOfTime ? (
+                <span className="text-[9.5px] sm:text-[10px] px-1.5 py-0.5 bg-error/20 text-error rounded-pill font-black leading-none">
+                  Waktu Habis
+                </span>
+              ) : !effectiveIsMyTurn ? (
                 <span className="text-[9.5px] sm:text-[10px] px-1.5 py-0.5 bg-sky text-charcoal rounded-pill font-black animate-pulse flex items-center gap-1 leading-none shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-charcoal"></span> Giliran
                 </span>
@@ -458,13 +513,27 @@ export default function MathScrabbleDuel({
 
             {/* Baris 2: Timer di Bawah Nama */}
             <div className={`text-base sm:text-xl font-black font-mono flex items-center gap-1.5 ${
-              !isMyTurn ? 'text-charcoal' : 'text-warmgray'
+              !effectiveIsMyTurn && !isOpponentOutOfTime ? 'text-charcoal' : 'text-warmgray'
             }`}>
-              <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${!isMyTurn ? 'text-charcoal animate-spin' : 'text-warmgray/40'}`} />
+              <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${!effectiveIsMyTurn && !isOpponentOutOfTime ? 'text-charcoal animate-spin' : 'text-warmgray/40'}`} />
               <span>{formatClock(oppTime)}</span>
             </div>
           </div>
         </div>
+
+        {/* Banner Status Bebas Bermain / Menunggu Lawan */}
+        {isOpponentOutOfTime && !isMeOutOfTime && (
+          <div className="bg-mint/25 border border-mint/60 text-charcoal text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-2 animate-pulse shadow-xs">
+            <span className="text-sm">⏱️</span>
+            <span>Waktu {opponentName} telah habis! Kamu bebas bermain hingga waktumu selesai.</span>
+          </div>
+        )}
+        {isMeOutOfTime && !isOpponentOutOfTime && (
+          <div className="bg-sky/20 border border-sky/50 text-charcoal text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-xs">
+            <span className="text-sm">⌛</span>
+            <span>Waktumu telah habis. Menunggu {opponentName} menyelesaikan sisa waktunya...</span>
+          </div>
+        )}
 
         {/* Row 2: Status Kartu & Putaran (Ringkas untuk HP) */}
         <div className="grid grid-cols-5 gap-1 text-center text-xs font-bold bg-cream/70 py-1.5 px-1.5 sm:px-2.5 rounded-xl border border-lavender/15">
@@ -575,8 +644,8 @@ export default function MathScrabbleDuel({
                   onClick={() => {
                     if (isPending) {
                       recallTile(r, c);
-                    } else if (cell.tile === null && selectedRackTile && isMyTurn) {
-                      setShowJokerToast(false);
+                    } else if (cell.tile === null && selectedRackTile && effectiveIsMyTurn) {
+                      setShowJokerModal(false);
                       if (selectedRackTile.isJoker || selectedRackTile.char === '★') {
                         setJokerTargetCell({ r, c });
                       } else {
@@ -587,7 +656,7 @@ export default function MathScrabbleDuel({
                   className={`relative aspect-square flex flex-col items-center justify-center rounded-[3px] transition-all cursor-pointer overflow-hidden ${bgClass} ${
                     isPending
                       ? 'ring-2 ring-mint ring-offset-1 z-10 animate-pulse'
-                      : isMyTurn && selectedRackTile && cell.tile === null
+                      : effectiveIsMyTurn && selectedRackTile && cell.tile === null
                       ? 'hover:opacity-80'
                       : ''
                   }`}
@@ -686,7 +755,7 @@ export default function MathScrabbleDuel({
                     : isJoker
                     ? 'ring-1 ring-amber-300'
                     : ''
-                } ${!isMyTurn ? 'opacity-80 cursor-not-allowed' : ''}`}
+                } ${!effectiveIsMyTurn ? 'opacity-80 cursor-not-allowed' : ''}`}
               >
                 <span className={`font-black text-sm sm:text-lg leading-none ${isJoker ? 'text-amber-700' : 'text-charcoal'}`}>
                   {tile.char}
@@ -728,7 +797,7 @@ export default function MathScrabbleDuel({
             </button>
             <button
               onClick={handleExchangeConfirm}
-              disabled={selectedForExchange.length === 0 || !isMyTurn}
+              disabled={selectedForExchange.length === 0 || !effectiveIsMyTurn}
               className="flex-1 py-2.5 rounded-button bg-charcoal text-white font-extrabold text-xs hover:bg-black disabled:opacity-50"
             >
               Tukar {selectedForExchange.length} Kartu 🔄
@@ -737,7 +806,7 @@ export default function MathScrabbleDuel({
         ) : (
           <>
             {/* Fitur 1: Live Validation & Score Preview */}
-            {isMyTurn && livePreview && (
+            {effectiveIsMyTurn && livePreview && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -766,27 +835,33 @@ export default function MathScrabbleDuel({
             {/* Primary Action Button: Mainkan */}
             <button
               onClick={handlePlayMove}
-              disabled={!isMyTurn || pendingPlacements.length === 0}
+              disabled={!effectiveIsMyTurn || pendingPlacements.length === 0}
               className={`w-full py-3 rounded-button font-black text-sm sm:text-base shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                isMyTurn && pendingPlacements.length > 0
+                effectiveIsMyTurn && pendingPlacements.length > 0
                   ? 'bg-[#FFE5A0] hover:bg-[#FFD97D] text-charcoal border-2 border-charcoal/10 ring-2 ring-[#FFE5A0]/50'
                   : 'bg-warmgray/20 text-warmgray/60 cursor-not-allowed'
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{isMyTurn ? `Mainkan (${pendingPlacements.length} Kartu)` : `Menunggu ${opponentName}...`}</span>
+              <span>
+                {effectiveIsMyTurn
+                  ? `Mainkan (${pendingPlacements.length} Kartu)`
+                  : isMeOutOfTime
+                  ? 'Waktumu Telah Habis'
+                  : `Menunggu ${opponentName}...`}
+              </span>
             </button>
 
             {/* Secondary Action Buttons: Tukar & Lewat */}
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  if (!isMyTurn) return;
+                  if (!effectiveIsMyTurn) return;
                   soundService.playClick();
                   recallAllTiles();
                   setExchangeMode(true);
                 }}
-                disabled={!isMyTurn || tileBag.length === 0}
+                disabled={!effectiveIsMyTurn || tileBag.length === 0}
                 className="flex-1 py-2.5 rounded-button bg-[#FFE5A0]/40 hover:bg-[#FFE5A0]/70 text-charcoal font-black text-xs transition-all active:scale-95 disabled:opacity-40"
               >
                 Tukar Kartu
@@ -794,7 +869,7 @@ export default function MathScrabbleDuel({
 
               <button
                 onClick={handlePassTurn}
-                disabled={!isMyTurn}
+                disabled={!effectiveIsMyTurn}
                 className="flex-1 py-2.5 rounded-button bg-[#FFE5A0]/40 hover:bg-[#FFE5A0]/70 text-charcoal font-black text-xs transition-all active:scale-95 disabled:opacity-40"
               >
                 Lewat
@@ -806,8 +881,8 @@ export default function MathScrabbleDuel({
 
       {/* Fitur 3: Notifikasi Popup Kartu Joker & Mini-Picker saat Ditaruh */}
       <JokerNotificationModal
-        isOpen={showJokerToast}
-        onClose={() => setShowJokerToast(false)}
+        isOpen={showJokerModal}
+        onClose={() => setShowJokerModal(false)}
       />
 
       <JokerPickerModal
