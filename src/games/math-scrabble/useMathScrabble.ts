@@ -241,9 +241,8 @@ export function useMathScrabble() {
     setTileBag(remaining);
     setZeroMoves(prev => prev + 1);
     setTurn(prev => prev + 1);
-    setFeedbackMsg({ type: 'info', text: `${tilesToReturn.length} kartu berhasil ditukar.` });
-
-    if (zeroMoves + 1 >= MAX_ZERO_MOVES) {
+    // Hanya stalemate jika kantung ubin sudah kosong dan tidak bisa tukar lagi
+    if (remaining.length === 0 && zeroMoves + 1 >= MAX_ZERO_MOVES) {
       soundService.playWin();
       setPhase('finished');
     }
@@ -261,11 +260,12 @@ export function useMathScrabble() {
     setTurn(prev => prev + 1);
     setFeedbackMsg({ type: 'info', text: 'Giliran dilewati.' });
 
-    if (newZero >= MAX_ZERO_MOVES) {
+    // Hanya stalemate jika kantung ubin sudah kosong dan lewat berkali-kali
+    if (tileBag.length === 0 && newZero >= MAX_ZERO_MOVES) {
       soundService.playWin();
       setPhase('finished');
     }
-  }, [recallAllTiles, zeroMoves, passesCount]);
+  }, [tileBag.length, recallAllTiles, zeroMoves, passesCount]);
 
   return {
     phase,

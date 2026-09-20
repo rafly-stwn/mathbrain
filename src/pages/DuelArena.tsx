@@ -100,7 +100,7 @@ export default function DuelArena() {
 
   // Overall speed timer countdown
   useEffect(() => {
-    if (status !== 'playing' || isTurnBased) return;
+    if (status !== 'playing' || isTurnBased || gameId === 'math-scrabble') return;
 
     const timer = setInterval(() => {
       setTimeLeft(t => {
@@ -114,11 +114,11 @@ export default function DuelArena() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [status, score, isTurnBased, finishMyGame]);
+  }, [status, score, isTurnBased, gameId, finishMyGame]);
 
   // Guaranteed transition to result screen when time is up for speed games
   useEffect(() => {
-    if (status === 'playing' && !isTurnBased && timeLeft === 0) {
+    if (status === 'playing' && !isTurnBased && gameId !== 'math-scrabble' && timeLeft === 0) {
       const timeout = setTimeout(() => {
         if (useDuelStore.getState().status === 'playing') {
           useDuelStore.setState({ status: 'result' });
@@ -126,7 +126,7 @@ export default function DuelArena() {
       }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [status, timeLeft, isTurnBased]);
+  }, [status, timeLeft, isTurnBased, gameId]);
 
   // Trigger celebration Confetti Pop / Explosion effects on result screen
   useEffect(() => {

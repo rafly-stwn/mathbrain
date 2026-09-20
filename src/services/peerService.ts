@@ -5,7 +5,7 @@ export type DuelMessage =
   | { type: 'JOIN'; payload: { id: string; name: string }; roomCode: string; senderId: string }
   | { type: 'REQUEST_SYNC'; payload: { id: string; name: string }; roomCode: string; senderId: string }
   | { type: 'ROOM_SYNC'; payload: { players: any[]; gameId: string; difficulty: string; status: string; matchDuration?: number }; roomCode: string; senderId: string }
-  | { type: 'START_COUNTDOWN'; payload: { seed: number; matchDuration?: number }; roomCode: string; senderId: string }
+  | { type: 'START_COUNTDOWN'; payload: { seed: number; matchDuration?: number; gameId?: string; difficulty?: string }; roomCode: string; senderId: string }
   | { type: 'SCORE_UPDATE'; payload: { id: string; name?: string; isHost?: boolean; score: number; streak: number; progress?: number }; roomCode: string; senderId: string }
   | { type: 'BOARD_MOVE'; payload: { id: string; moveData: any; score: number; nextTurnPlayerId: string }; roomCode: string; senderId: string }
   | { type: 'FINISH_GAME'; payload: { id: string; name?: string; isHost?: boolean; score: number; stats?: any }; roomCode: string; senderId: string }

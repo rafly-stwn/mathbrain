@@ -128,6 +128,8 @@ export const useDuelStore = create<DuelState>()(
             set({
               status: 'starting',
               seed: msg.payload.seed,
+              gameId: (msg.payload.gameId as GameId) || get().gameId,
+              difficulty: (msg.payload.difficulty as Difficulty) || get().difficulty,
               matchDuration: msg.payload.matchDuration || get().matchDuration,
               countdown: 3,
               currentTurnPlayerId: hostPlayer?.id || '',
@@ -323,7 +325,12 @@ export const useDuelStore = create<DuelState>()(
             const myId = peerService.getMyId();
             peerService.broadcast({
               type: 'START_COUNTDOWN',
-              payload: { seed, matchDuration: get().matchDuration }
+              payload: {
+                seed,
+                matchDuration: get().matchDuration,
+                gameId: get().gameId,
+                difficulty: get().difficulty,
+              }
             });
             set({
               status: 'starting',

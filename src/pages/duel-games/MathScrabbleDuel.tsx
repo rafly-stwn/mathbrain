@@ -1,37 +1,39 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, AlertCircle, CheckCircle, Info, Sparkles } from 'lucide-react';
-import { BOARD_SIZE, RACK_SIZE, BOARD_MULTIPLIERS, MAX_ZERO_MOVES } from '../../games/math-scrabble/constants';
+import { BOARD_SIZE, RACK_SIZE, BOARD_MULTIPLIERS } from '../../games/math-scrabble/constants';
 import { createTileBag, drawTiles } from '../../games/math-scrabble/tileBag';
 import { validateMove } from '../../games/math-scrabble/mathValidator';
 import JokerNotificationModal from '../../games/math-scrabble/JokerNotificationModal';
 import JokerPickerModal from '../../games/math-scrabble/JokerPickerModal';
 import { soundService } from '../../services/soundService';
 import type { BoardCell, Tile, Placement } from '../../games/math-scrabble/types';
-import type { Difficulty } from '../../types';
 
 interface MathScrabbleDuelProps {
-  difficulty: Difficulty;
+  difficulty: string;
   seed: number;
   myId: string;
-  opponentId?: string;
+  opponentId: string;
   opponentName: string;
   opponentFinished?: boolean;
   isMyTurn: boolean;
-  currentTurnPlayerId: string;
-  lastBoardMove: { id: string; moveData: any; score: number } | null;
+  currentTurnPlayerId?: string;
+  lastBoardMove?: any;
   matchDuration: number;
   onSendBoardMove: (moveData: any, newScore: number, explicitNextTurnId?: string) => void;
-  onScoreUpdate: (score: number, streak: number, progress?: number) => void;
+  onScoreUpdate: (newScore: number, newStreak: number, progress?: number) => void;
   onFinish?: (finalScore: number) => void;
 }
 
 export default function MathScrabbleDuel({
+  difficulty: _difficulty,
+  seed: _seed,
   myId,
   opponentId,
   opponentName,
   opponentFinished,
   isMyTurn,
+  currentTurnPlayerId: _currentTurnPlayerId,
   lastBoardMove,
   matchDuration = 1200,
   onSendBoardMove,
@@ -70,8 +72,9 @@ export default function MathScrabbleDuel({
   // Match Statistics (matching user requirements)
   const [score, setScore] = useState(0);
   const [turn, setTurn] = useState(1);
-  const [zeroMoves, setZeroMoves] = useState(0);
+  const [exchangesCount, setExchangesCount] = useState(0);
   const [passesCount, setPassesCount] = useState(0);
+  const [consecutivePasses, setConsecutivePasses] = useState(0);
   const [usedTilesCount, setUsedTilesCount] = useState(0);
   const [remainingBagCount, setRemainingBagCount] = useState(84); // 100 total - 16 initial dealt = 84
 
@@ -145,8 +148,9 @@ export default function MathScrabbleDuel({
     setOppTime(matchDuration);
     setScore(0);
     setTurn(1);
-    setZeroMoves(0);
+    setExchangesCount(0);
     setPassesCount(0);
+    setConsecutivePasses(0);
     setUsedTilesCount(0);
     setRemainingBagCount(84);
     setPendingPlacements([]);
@@ -233,7 +237,7 @@ export default function MathScrabbleDuel({
 
         setUsedTilesCount(prev => prev + placements.length);
         setRemainingBagCount(prev => Math.max(0, prev - placements.length));
-        setZeroMoves(0);
+        setConsecutivePasses(0);
         setTurn(prev => prev + 1);
         setFeedbackMsg({
           type: 'info',
@@ -241,22 +245,27 @@ export default function MathScrabbleDuel({
         });
       } else if (type === 'exchange') {
         soundService.playExchange();
-        setZeroMoves(prev => prev + 1);
+        setExchangesCount(prev => prev + 1);
+        setConsecutivePasses(0);
         setTurn(prev => prev + 1);
         setFeedbackMsg({ type: 'info', text: `${opponentName} menukar kartu. ${isOpponentOutOfTime ? 'Kamu bebas bermain!' : 'Giliran Anda!'}` });
       } else if (type === 'pass') {
         soundService.playPass();
-        setZeroMoves(prev => prev + 1);
         setPassesCount(prev => prev + 1);
         setTurn(prev => prev + 1);
         setFeedbackMsg({ type: 'info', text: `${opponentName} melewatkan giliran. ${isOpponentOutOfTime ? 'Kamu bebas bermain!' : 'Giliran Anda!'}` });
-      }
 
-      if (zeroMoves + 1 >= MAX_ZERO_MOVES && onFinish) {
-        onFinish(score);
+        // Stalemate HANYA jika kantung ubin sudah habis (0) dan kedua pemain lewat berkali-kali berturut-turut (4x)
+        setConsecutivePasses(prev => {
+          const nextPasses = prev + 1;
+          if (remainingBagCount === 0 && nextPasses >= 4 && onFinish) {
+            onFinish(score);
+          }
+          return nextPasses;
+        });
       }
     }
-  }, [lastBoardMove, myId, opponentName, score, zeroMoves, isOpponentOutOfTime, onFinish]);
+  }, [lastBoardMove, myId, opponentName, score, isOpponentOutOfTime, remainingBagCount, onFinish]);
 
   // Tile Selection on Rack
   const selectRackTile = useCallback((tile: Tile) => {
@@ -350,8 +359,7 @@ export default function MathScrabbleDuel({
     setUsedTilesCount(prev => prev + placedCount);
     setRemainingBagCount(prev => Math.max(0, prev - placedCount));
     setPendingPlacements([]);
-    setZeroMoves(0);
-    setPassesCount(0);
+    setConsecutivePasses(0);
     setTurn(prev => prev + 1);
 
     const eqTexts = validation.equations?.map(e => `${e.text} (+${e.score})`).join(', ') || '';
@@ -372,7 +380,7 @@ export default function MathScrabbleDuel({
       nextTurnTarget
     );
 
-    // Game over check
+    // Game over check: hanya jika semua ubin di kantung dan rak sudah habis
     if (remaining.length === 0 && newRack.length === 0 && onFinish) {
       onFinish(newScore);
     }
@@ -393,7 +401,8 @@ export default function MathScrabbleDuel({
 
     setRack([...keptTiles, ...drawn]);
     setTileBag(remaining);
-    setZeroMoves(prev => prev + 1);
+    setExchangesCount(prev => prev + 1);
+    setConsecutivePasses(0);
     setTurn(prev => prev + 1);
     setSelectedForExchange([]);
     setExchangeMode(false);
@@ -409,11 +418,7 @@ export default function MathScrabbleDuel({
       score,
       nextTurnTarget
     );
-
-    if (zeroMoves + 1 >= MAX_ZERO_MOVES && onFinish) {
-      onFinish(score);
-    }
-  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, selectedForExchange, rack, tileBag, myTime, score, zeroMoves, recallAllTiles, onSendBoardMove, onFinish]);
+  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, selectedForExchange, rack, tileBag, myTime, score, recallAllTiles, onSendBoardMove]);
 
   // Action: Lewat (Pass Turn)
   const handlePassTurn = useCallback(() => {
@@ -421,11 +426,11 @@ export default function MathScrabbleDuel({
     soundService.playPass();
     recallAllTiles();
 
-    const newZero = zeroMoves + 1;
     const newPasses = passesCount + 1;
+    const newConsecutive = consecutivePasses + 1;
 
-    setZeroMoves(newZero);
     setPassesCount(newPasses);
+    setConsecutivePasses(newConsecutive);
     setTurn(prev => prev + 1);
     setFeedbackMsg({ type: 'info', text: 'Giliran dilewati.' });
 
@@ -439,10 +444,11 @@ export default function MathScrabbleDuel({
       nextTurnTarget
     );
 
-    if (newZero >= MAX_ZERO_MOVES && onFinish) {
+    // Stalemate HANYA jika ubin kantung habis (0) dan berturut-turut lewat 4 kali
+    if (tileBag.length === 0 && newConsecutive >= 4 && onFinish) {
       onFinish(score);
     }
-  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, zeroMoves, passesCount, score, myTime, recallAllTiles, onSendBoardMove, onFinish]);
+  }, [effectiveIsMyTurn, isOpponentOutOfTime, myId, opponentId, passesCount, consecutivePasses, tileBag.length, score, myTime, recallAllTiles, onSendBoardMove, onFinish]);
 
   return (
     <motion.div
@@ -550,8 +556,8 @@ export default function MathScrabbleDuel({
             <span className="text-xs sm:text-sm font-black text-charcoal">{usedTilesCount}</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-[9px] sm:text-[10px] text-warmgray uppercase tracking-wider font-bold">Six Zero</span>
-            <span className="text-xs sm:text-sm font-black text-charcoal">{zeroMoves}/6</span>
+            <span className="text-[9px] sm:text-[10px] text-warmgray uppercase tracking-wider font-bold">Ditukar</span>
+            <span className="text-xs sm:text-sm font-black text-charcoal">{exchangesCount}</span>
           </div>
           <div className="flex flex-col items-center">
             <span className="text-[9px] sm:text-[10px] text-warmgray uppercase tracking-wider font-bold">Lewat</span>
