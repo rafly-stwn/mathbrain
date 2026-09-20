@@ -21,6 +21,8 @@ export function useMathScrabble() {
   const [passesCount, setPassesCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(1200); // 20:00 default
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [showJokerToast, setShowJokerToast] = useState(false);
+  const seenJokerIdsRef = useRef<Set<string>>(new Set());
 
   const addScore = useGameStore(state => state.addScore);
   const scores = useGameStore(state => state.scores);
@@ -61,7 +63,18 @@ export function useMathScrabble() {
     setTimeLeft(durationSeconds);
     setPhase('playing');
     setFeedbackMsg(null);
+    seenJokerIdsRef.current.clear();
   }, [initBoard]);
+
+  // Detect when a new Joker enters rack to trigger top toast banner
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const newJokers = rack.filter(t => (t.isJoker || t.char === '★') && !seenJokerIdsRef.current.has(t.id));
+    if (newJokers.length > 0) {
+      newJokers.forEach(j => seenJokerIdsRef.current.add(j.id));
+      setShowJokerToast(true);
+    }
+  }, [rack, phase]);
 
   // Chess clock timer
   const timerRef = useRef<number | null>(null);
@@ -106,16 +119,17 @@ export function useMathScrabble() {
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
   }, []);
 
-  // Place selected rack tile on board
-  const placeTile = useCallback((r: number, c: number) => {
-    if (!selectedRackTile) return;
+  // Place selected rack tile on board (supports overrideTile for Joker selection)
+  const placeTile = useCallback((r: number, c: number, overrideTile?: Tile) => {
+    const tileToPlace = overrideTile || selectedRackTile;
+    if (!tileToPlace) return;
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
     soundService.playTilePlace();
-    const newPlacements = [...pendingPlacements, { r, c, tile: selectedRackTile }];
+    const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
     setPendingPlacements(newPlacements);
-    setRack(prev => prev.filter(t => t.id !== selectedRackTile.id));
+    setRack(prev => prev.filter(t => t.id !== tileToPlace.id));
     setSelectedRackTile(null);
   }, [selectedRackTile, board, pendingPlacements]);
 
@@ -125,15 +139,22 @@ export function useMathScrabble() {
     if (!placed) return;
 
     soundService.playTileRecall();
+    // Revert Joker to original '★' if recalled
+    const tileToReturn = placed.tile.isJoker
+      ? { ...placed.tile, char: '★' }
+      : placed.tile;
+
     setPendingPlacements(prev => prev.filter(p => !(p.r === r && p.c === c)));
-    setRack(prev => [...prev, placed.tile]);
+    setRack(prev => [...prev, tileToReturn]);
   }, [pendingPlacements]);
 
   // Recall all pending tiles
   const recallAllTiles = useCallback(() => {
     if (pendingPlacements.length === 0) return;
     soundService.playTileRecall();
-    const recalledTiles = pendingPlacements.map(p => p.tile);
+    const recalledTiles = pendingPlacements.map(p =>
+      p.tile.isJoker ? { ...p.tile, char: '★' } : p.tile
+    );
     setRack(prev => [...prev, ...recalledTiles]);
     setPendingPlacements([]);
   }, [pendingPlacements]);
@@ -265,5 +286,7 @@ export function useMathScrabble() {
     exchangeTiles,
     passTurn,
     setPhase,
+    showJokerToast,
+    setShowJokerToast,
   };
 }

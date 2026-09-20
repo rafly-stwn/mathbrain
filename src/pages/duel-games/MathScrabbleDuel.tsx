@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, AlertCircle, CheckCircle, Info, Sparkles } from 'lucide-react';
 import { BOARD_SIZE, RACK_SIZE, BOARD_MULTIPLIERS, MAX_ZERO_MOVES } from '../../games/math-scrabble/constants';
 import { createTileBag, drawTiles } from '../../games/math-scrabble/tileBag';
 import { validateMove } from '../../games/math-scrabble/mathValidator';
+import JokerToastBanner from '../../games/math-scrabble/JokerToastBanner';
+import JokerPickerModal from '../../games/math-scrabble/JokerPickerModal';
 import { soundService } from '../../services/soundService';
 import type { BoardCell, Tile, Placement } from '../../games/math-scrabble/types';
 import type { Difficulty } from '../../types';
@@ -38,6 +40,14 @@ export default function MathScrabbleDuel({
   const [selectedRackTile, setSelectedRackTile] = useState<Tile | null>(null);
   const [pendingPlacements, setPendingPlacements] = useState<Placement[]>([]);
 
+  // Fitur 2: Sorot Langkah Terakhir Lawan
+  const [lastOpponentPlacements, setLastOpponentPlacements] = useState<{ r: number; c: number }[]>([]);
+
+  // Fitur 3: Notifikasi Kartu Joker & Mini-Picker saat Ditaruh
+  const [showJokerToast, setShowJokerToast] = useState(false);
+  const [jokerTargetCell, setJokerTargetCell] = useState<{ r: number; c: number } | null>(null);
+  const seenJokerIdsRef = useRef<Set<string>>(new Set());
+
   // Dual Chess Clocks
   const [myTime, setMyTime] = useState(matchDuration);
   const [oppTime, setOppTime] = useState(matchDuration);
@@ -53,6 +63,34 @@ export default function MathScrabbleDuel({
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [exchangeMode, setExchangeMode] = useState(false);
   const [selectedForExchange, setSelectedForExchange] = useState<string[]>([]);
+
+  // Fitur 1: Pratinjau Persamaan & Estimasi Skor Real-time
+  const livePreview = useMemo(() => {
+    if (pendingPlacements.length === 0) return null;
+    return validateMove(board, pendingPlacements);
+  }, [board, pendingPlacements]);
+
+  // Deteksi jika ada kartu Joker baru masuk ke rak
+  useEffect(() => {
+    const newJokers = rack.filter(t => (t.isJoker || t.char === '★') && !seenJokerIdsRef.current.has(t.id));
+    if (newJokers.length > 0) {
+      newJokers.forEach(j => seenJokerIdsRef.current.add(j.id));
+      setShowJokerToast(true);
+    }
+  }, [rack]);
+
+  const handleJokerSelect = (char: string) => {
+    if (jokerTargetCell && selectedRackTile) {
+      placeTile(jokerTargetCell.r, jokerTargetCell.c, {
+        ...selectedRackTile,
+        char,
+        value: 0,
+        isJoker: true,
+        originalChar: '★',
+      });
+      setJokerTargetCell(null);
+    }
+  };
 
   const formatClock = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -141,6 +179,8 @@ export default function MathScrabbleDuel({
 
       if (type === 'play' && Array.isArray(placements)) {
         soundService.playTilePlace();
+        // Fitur 2: Simpan posisi langkah lawan untuk efek highlight ubin menyala
+        setLastOpponentPlacements(placements.map((p: Placement) => ({ r: p.r, c: p.c })));
         setBoard(prev => {
           const next = prev.map(row => row.map(cell => ({ ...cell })));
           placements.forEach((p: Placement) => {
@@ -184,16 +224,18 @@ export default function MathScrabbleDuel({
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
   }, [isMyTurn]);
 
-  // Place Tile on Board
-  const placeTile = useCallback((r: number, c: number) => {
-    if (!isMyTurn || !selectedRackTile) return;
+  // Place Tile on Board (supports overrideTile for Joker selection)
+  const placeTile = useCallback((r: number, c: number, overrideTile?: Tile) => {
+    const tileToPlace = overrideTile || selectedRackTile;
+    if (!isMyTurn || !tileToPlace) return;
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
     soundService.playTilePlace();
-    const newPlacements = [...pendingPlacements, { r, c, tile: selectedRackTile }];
+    setLastOpponentPlacements([]); // Clear highlight when player moves
+    const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
     setPendingPlacements(newPlacements);
-    setRack(prev => prev.filter(t => t.id !== selectedRackTile.id));
+    setRack(prev => prev.filter(t => t.id !== tileToPlace.id));
     setSelectedRackTile(null);
   }, [isMyTurn, selectedRackTile, board, pendingPlacements]);
 
@@ -203,15 +245,22 @@ export default function MathScrabbleDuel({
     if (!placed) return;
 
     soundService.playTileRecall();
+    // Revert Joker to original '★' if recalled
+    const tileToReturn = placed.tile.isJoker
+      ? { ...placed.tile, char: '★' }
+      : placed.tile;
+
     setPendingPlacements(prev => prev.filter(p => !(p.r === r && p.c === c)));
-    setRack(prev => [...prev, placed.tile]);
+    setRack(prev => [...prev, tileToReturn]);
   }, [pendingPlacements]);
 
   // Recall all pending tiles
   const recallAllTiles = useCallback(() => {
     if (pendingPlacements.length === 0) return;
     soundService.playTileRecall();
-    const recalledTiles = pendingPlacements.map(p => p.tile);
+    const recalledTiles = pendingPlacements.map(p =>
+      p.tile.isJoker ? { ...p.tile, char: '★' } : p.tile
+    );
     setRack(prev => [...prev, ...recalledTiles]);
     setPendingPlacements([]);
   }, [pendingPlacements]);
@@ -514,6 +563,8 @@ export default function MathScrabbleDuel({
                 bgClass = 'bg-[#FCE38A]';
               }
 
+              const isHighlightedOpponent = lastOpponentPlacements.some(p => p.r === r && p.c === c);
+
               return (
                 <div
                   key={`${r}-${c}`}
@@ -521,7 +572,11 @@ export default function MathScrabbleDuel({
                     if (isPending) {
                       recallTile(r, c);
                     } else if (cell.tile === null && selectedRackTile && isMyTurn) {
-                      placeTile(r, c);
+                      if (selectedRackTile.isJoker || selectedRackTile.char === '★') {
+                        setJokerTargetCell({ r, c });
+                      } else {
+                        placeTile(r, c);
+                      }
                     }
                   }}
                   className={`relative aspect-square flex flex-col items-center justify-center rounded-[3px] transition-all cursor-pointer overflow-hidden ${bgClass} ${
@@ -553,8 +608,10 @@ export default function MathScrabbleDuel({
                   {/* Tile display */}
                   {tile && (
                     <div
-                      className={`w-full h-full rounded-[3px] flex flex-col items-center justify-center relative shadow-xs ${
-                        isMine
+                      className={`w-full h-full rounded-[3px] flex flex-col items-center justify-center relative shadow-xs transition-all ${
+                        isHighlightedOpponent
+                          ? 'bg-[#E3F2FD] border-2 border-amber-400 ring-2 ring-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse z-10'
+                          : isMine
                           ? 'bg-[#FFF5DB] border border-[#D8C7A5]'
                           : isOpp
                           ? 'bg-[#E3F2FD] border border-[#90CAF9]'
@@ -567,6 +624,11 @@ export default function MathScrabbleDuel({
                       <span className="absolute bottom-0.5 right-0.5 text-[6.5px] sm:text-[8.5px] font-black text-warmgray leading-none">
                         {tile.value}
                       </span>
+                      {tile.isJoker && (
+                        <span className="absolute top-0.5 left-0.5 text-[6px] sm:text-[7.5px] text-amber-600 font-black leading-none">
+                          ★
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -592,6 +654,7 @@ export default function MathScrabbleDuel({
           {rack.map(tile => {
             const isSelected = selectedRackTile?.id === tile.id;
             const isMarkedExchange = selectedForExchange.includes(tile.id);
+            const isJoker = tile.isJoker || tile.char === '★';
 
             return (
               <motion.div
@@ -608,20 +671,30 @@ export default function MathScrabbleDuel({
                     selectRackTile(tile);
                   }
                 }}
-                className={`flex-1 max-w-[42px] h-10 sm:h-13 bg-[#FFF5DB] border-2 rounded-xl flex flex-col items-center justify-center relative cursor-pointer shadow-sm transition-all ${
+                className={`flex-1 max-w-[42px] h-10 sm:h-13 border-2 rounded-xl flex flex-col items-center justify-center relative cursor-pointer shadow-sm transition-all ${
+                  isJoker ? 'bg-[#FFF9E6] border-amber-400' : 'bg-[#FFF5DB] border-[#D8C7A5]'
+                } ${
                   isSelected
                     ? 'border-mint ring-3 ring-mint/40 -translate-y-1.5'
                     : isMarkedExchange
                     ? 'border-error bg-error/20 ring-2 ring-error'
-                    : 'border-[#D8C7A5]'
+                    : isJoker
+                    ? 'ring-1 ring-amber-300'
+                    : ''
                 } ${!isMyTurn ? 'opacity-80 cursor-not-allowed' : ''}`}
               >
-                <span className="font-black text-sm sm:text-lg text-charcoal leading-none">
+                <span className={`font-black text-sm sm:text-lg leading-none ${isJoker ? 'text-amber-700' : 'text-charcoal'}`}>
                   {tile.char}
                 </span>
                 <span className="absolute bottom-0.5 right-1 text-[7px] sm:text-[9px] font-black text-warmgray leading-none">
                   {tile.value}
                 </span>
+
+                {isJoker && (
+                  <span className="absolute top-0.5 left-1 text-[7.5px] sm:text-[9px] text-amber-500 font-black leading-none">
+                    ★
+                  </span>
+                )}
 
                 {isMarkedExchange && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-error text-white text-[9px] font-black flex items-center justify-center">
@@ -658,6 +731,33 @@ export default function MathScrabbleDuel({
           </div>
         ) : (
           <>
+            {/* Fitur 1: Live Validation & Score Preview */}
+            {isMyTurn && livePreview && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-between border transition-all ${
+                  livePreview.valid
+                    ? 'bg-mint/20 border-mint text-charcoal'
+                    : 'bg-amber-50 border-amber-300/80 text-amber-900'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 truncate mr-2">
+                  <span className="text-sm">{livePreview.valid ? '✓' : 'ℹ️'}</span>
+                  <span className="truncate">
+                    {livePreview.valid
+                      ? `Sah: ${livePreview.equations?.map(e => e.text).join(', ')}`
+                      : livePreview.error || 'Persamaan belum valid'}
+                  </span>
+                </div>
+                {livePreview.valid && (
+                  <span className="shrink-0 px-2 py-0.5 bg-mint rounded-pill text-[11px] font-black text-charcoal shadow-2xs">
+                    +{livePreview.score} Poin
+                  </span>
+                )}
+              </motion.div>
+            )}
+
             {/* Primary Action Button: Mainkan */}
             <button
               onClick={handlePlayMove}
@@ -698,6 +798,18 @@ export default function MathScrabbleDuel({
           </>
         )}
       </div>
+
+      {/* Fitur 3: Notifikasi Toast Meluncur dari Atas & Mini-Picker saat Ditaruh */}
+      <JokerToastBanner
+        show={showJokerToast}
+        onClose={() => setShowJokerToast(false)}
+      />
+
+      <JokerPickerModal
+        isOpen={jokerTargetCell !== null}
+        onClose={() => setJokerTargetCell(null)}
+        onSelect={handleJokerSelect}
+      />
     </motion.div>
   );
 }

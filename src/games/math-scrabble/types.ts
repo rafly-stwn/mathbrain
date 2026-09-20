@@ -2,8 +2,10 @@ export type MultiplierType = 'none' | 'center' | 'x2_point' | 'x3_point' | 'x2_s
 
 export interface Tile {
   id: string;
-  char: string; // e.g. '0'-'20', '+', '-', '×', '÷', '='
+  char: string; // e.g. '0'-'20', '+', '-', '×', '÷', '=', '★'
   value: number; // subscript points
+  isJoker?: boolean;
+  originalChar?: string;
 }
 
 export interface BoardCell {

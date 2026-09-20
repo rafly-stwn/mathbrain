@@ -17,10 +17,13 @@ export function createTileBag(seed?: number, prefix?: string): Tile[] {
 
   for (const spec of TILE_SPECS) {
     for (let i = 0; i < spec.count; i++) {
+      const isJoker = spec.char === '★';
       bag.push({
         id: `${tilePrefix}-t${idCounter++}-${spec.char}`,
         char: spec.char,
         value: spec.value,
+        isJoker,
+        originalChar: isJoker ? '★' : undefined,
       });
     }
   }

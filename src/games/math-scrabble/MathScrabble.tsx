@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Clock, RotateCcw, AlertCircle, CheckCircle, Info, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useMathScrabble } from './useMathScrabble';
+import { validateMove } from './mathValidator';
+import JokerToastBanner from './JokerToastBanner';
+import JokerPickerModal from './JokerPickerModal';
 import { soundService } from '../../services/soundService';
 
 export default function MathScrabble() {
@@ -31,10 +34,32 @@ export default function MathScrabble() {
     exchangeTiles,
     passTurn,
     setPhase,
+    showJokerToast,
+    setShowJokerToast,
   } = useMathScrabble();
 
   const [exchangeMode, setExchangeMode] = useState(false);
   const [selectedForExchange, setSelectedForExchange] = useState<string[]>([]);
+  const [jokerTargetCell, setJokerTargetCell] = useState<{ r: number; c: number } | null>(null);
+
+  // Fitur 1: Pratinjau Persamaan & Estimasi Skor Real-time
+  const livePreview = useMemo(() => {
+    if (pendingPlacements.length === 0) return null;
+    return validateMove(board, pendingPlacements);
+  }, [board, pendingPlacements]);
+
+  const handleJokerSelect = (char: string) => {
+    if (jokerTargetCell && selectedRackTile) {
+      placeTile(jokerTargetCell.r, jokerTargetCell.c, {
+        ...selectedRackTile,
+        char,
+        value: 0,
+        isJoker: true,
+        originalChar: '★',
+      });
+      setJokerTargetCell(null);
+    }
+  };
 
   const formatClock = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -302,7 +327,11 @@ export default function MathScrabble() {
                     if (isPending) {
                       recallTile(r, c);
                     } else if (cell.tile === null && selectedRackTile) {
-                      placeTile(r, c);
+                      if (selectedRackTile.isJoker || selectedRackTile.char === '★') {
+                        setJokerTargetCell({ r, c });
+                      } else {
+                        placeTile(r, c);
+                      }
                     }
                   }}
                   className={`relative aspect-square flex flex-col items-center justify-center rounded-[3px] transition-all cursor-pointer overflow-hidden ${bgClass} ${
@@ -333,13 +362,24 @@ export default function MathScrabble() {
 
                   {/* Tile Rendered */}
                   {tile && (
-                    <div className="w-full h-full bg-[#FFF5DB] border border-[#D8C7A5] rounded-[3px] flex flex-col items-center justify-center relative shadow-xs">
+                    <div
+                      className={`w-full h-full rounded-[3px] flex flex-col items-center justify-center relative shadow-xs ${
+                        tile.isJoker
+                          ? 'bg-[#FFF9E6] border border-amber-400'
+                          : 'bg-[#FFF5DB] border border-[#D8C7A5]'
+                      }`}
+                    >
                       <span className="font-black text-xs sm:text-base text-charcoal leading-none">
                         {tile.char}
                       </span>
                       <span className="absolute bottom-0.5 right-0.5 text-[7px] sm:text-[9px] font-black text-warmgray leading-none">
                         {tile.value}
                       </span>
+                      {tile.isJoker && (
+                        <span className="absolute top-0.5 left-0.5 text-[6.5px] sm:text-[8px] font-black text-amber-600 leading-none">
+                          ★
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -368,6 +408,7 @@ export default function MathScrabble() {
           {rack.map(tile => {
             const isSelected = selectedRackTile?.id === tile.id;
             const isMarkedExchange = selectedForExchange.includes(tile.id);
+            const isJoker = tile.isJoker || tile.char === '★';
 
             return (
               <motion.div
@@ -383,20 +424,30 @@ export default function MathScrabble() {
                     selectRackTile(tile);
                   }
                 }}
-                className={`w-9 h-11 sm:w-11 sm:h-13 bg-[#FFF5DB] border-2 rounded-xl flex flex-col items-center justify-center relative cursor-pointer shadow-sm transition-all ${
+                className={`w-9 h-11 sm:w-11 sm:h-13 border-2 rounded-xl flex flex-col items-center justify-center relative cursor-pointer shadow-sm transition-all ${
+                  isJoker ? 'bg-[#FFF9E6] border-amber-400' : 'bg-[#FFF5DB] border-[#D8C7A5]'
+                } ${
                   isSelected
                     ? 'border-mint ring-3 ring-mint/40 -translate-y-1.5'
                     : isMarkedExchange
                     ? 'border-error bg-error/20 ring-2 ring-error'
-                    : 'border-[#D8C7A5]'
+                    : isJoker
+                    ? 'ring-1 ring-amber-300'
+                    : ''
                 }`}
               >
-                <span className="font-black text-sm sm:text-lg text-charcoal leading-none">
+                <span className={`font-black text-sm sm:text-lg leading-none ${isJoker ? 'text-amber-700' : 'text-charcoal'}`}>
                   {tile.char}
                 </span>
                 <span className="absolute bottom-1 right-1 text-[8px] sm:text-[10px] font-black text-warmgray leading-none">
                   {tile.value}
                 </span>
+
+                {isJoker && (
+                  <span className="absolute top-1 left-1 text-[8px] sm:text-[9.5px] text-amber-500 font-black leading-none">
+                    ★
+                  </span>
+                )}
 
                 {isMarkedExchange && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-error text-white text-[9px] font-black flex items-center justify-center">
@@ -432,6 +483,33 @@ export default function MathScrabble() {
           </div>
         ) : (
           <>
+            {/* Fitur 1: Live Validation & Score Preview */}
+            {livePreview && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-between border transition-all ${
+                  livePreview.valid
+                    ? 'bg-mint/20 border-mint text-charcoal'
+                    : 'bg-amber-50 border-amber-300/80 text-amber-900'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 truncate mr-2">
+                  <span className="text-sm">{livePreview.valid ? '✓' : 'ℹ️'}</span>
+                  <span className="truncate">
+                    {livePreview.valid
+                      ? `Sah: ${livePreview.equations?.map(e => e.text).join(', ')}`
+                      : livePreview.error || 'Persamaan belum valid'}
+                  </span>
+                </div>
+                {livePreview.valid && (
+                  <span className="shrink-0 px-2 py-0.5 bg-mint rounded-pill text-[11px] font-black text-charcoal shadow-2xs">
+                    +{livePreview.score} Poin
+                  </span>
+                )}
+              </motion.div>
+            )}
+
             {/* Primary Action Button: Mainkan */}
             <button
               onClick={playMove}
@@ -469,6 +547,18 @@ export default function MathScrabble() {
           </>
         )}
       </div>
+
+      {/* Fitur 3: Notifikasi Toast Meluncur dari Atas & Mini-Picker saat Ditaruh */}
+      <JokerToastBanner
+        show={showJokerToast}
+        onClose={() => setShowJokerToast(false)}
+      />
+
+      <JokerPickerModal
+        isOpen={jokerTargetCell !== null}
+        onClose={() => setJokerTargetCell(null)}
+        onSelect={handleJokerSelect}
+      />
     </div>
   );
 }

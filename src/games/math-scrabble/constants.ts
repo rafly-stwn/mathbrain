@@ -94,4 +94,5 @@ export const TILE_SPECS: TileSpec[] = [
   { char: '×', count: 6, value: 2 },
   { char: '÷', count: 4, value: 3 },
   { char: '=', count: 14, value: 1 },
+  { char: '★', count: 2, value: 0 },
 ];
