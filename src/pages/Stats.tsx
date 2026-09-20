@@ -35,8 +35,12 @@ export default function Stats() {
                 className="bg-white rounded-card p-5 shadow-card flex items-center justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="text-3xl bg-cream p-2 rounded-xl" style={{ backgroundColor: game.color }}>
-                    {game.emoji}
+                  <div className="w-12 h-12 bg-cream p-1.5 rounded-xl flex items-center justify-center shrink-0 shadow-2xs">
+                    {game.icon ? (
+                      <img src={game.icon} alt={game.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-2xl">{game.emoji}</span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-bold text-charcoal text-lg">{game.name}</h3>

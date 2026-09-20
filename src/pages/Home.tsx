@@ -68,7 +68,13 @@ export default function Home() {
               )}
               
               <div className="flex flex-row lg:flex-col items-center lg:items-start gap-4 h-full relative z-0">
-                <div className="text-5xl bg-white/40 p-3 rounded-2xl lg:mb-2">{game.emoji}</div>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/50 p-2 sm:p-2.5 rounded-2xl lg:mb-2 flex items-center justify-center shrink-0 shadow-xs">
+                  {game.icon ? (
+                    <img src={game.icon} alt={game.name} className="w-full h-full object-contain drop-shadow-xs" />
+                  ) : (
+                    <span className="text-4xl">{game.emoji}</span>
+                  )}
+                </div>
                 
                 <div className="flex-1 flex flex-col w-full">
                   <h3 className="text-xl font-bold text-charcoal mb-1">{game.name}</h3>

@@ -9,6 +9,7 @@ export interface GameInfo {
   name: string;
   description: string;
   emoji: string;
+  icon?: string;
   color: string; // tailwind bg class
   accentColor: string; // hex
   path: string;

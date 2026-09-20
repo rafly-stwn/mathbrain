@@ -1,11 +1,31 @@
 import type { GameInfo } from '../types';
+import mathIcon from '../games/ico/math.svg';
+import additionIcon from '../games/ico/penjumlahan.svg';
+import multiplicationIcon from '../games/ico/perkalian.svg';
+import kraepelinIcon from '../games/ico/kraeplin.svg';
+import magicSquareIcon from '../games/ico/magic.svg';
+import sudokuIcon from '../games/ico/sudoku.svg';
+import kenkenIcon from '../games/ico/kenken.svg';
+import kakuroIcon from '../games/ico/kakuro.svg';
 
 export const games: GameInfo[] = [
+  {
+    id: 'math-scrabble',
+    name: 'Math Scrabble',
+    description: 'Bentuk persamaan matematika silang pada papan 15x15 dengan ubin angka, simbol, dan kotak pengganda skor!',
+    emoji: '🔤',
+    icon: mathIcon,
+    color: 'bg-lavender/30',
+    accentColor: '#8C7AE6',
+    path: '/game/math-scrabble',
+    available: true,
+  },
   {
     id: 'speed-addition',
     name: 'Penjumlahan Cepat',
     description: 'Selesaikan sebanyak mungkin operasi penjumlahan dalam 60 detik. Uji ketangkasan hitung dan konsentrasi mentalmu!',
     emoji: '⚡',
+    icon: additionIcon,
     color: 'bg-peach/30',
     accentColor: '#FFB5A7',
     path: '/game/speed-addition',
@@ -16,6 +36,7 @@ export const games: GameInfo[] = [
     name: 'Perkalian Cepat',
     description: 'Tantang kemampuan perkalian dalam tekanan waktu 60 detik. Buktikan seberapa cepat dan akurat kalkulasi angka Anda!',
     emoji: '✖️',
+    icon: multiplicationIcon,
     color: 'bg-lemon/30',
     accentColor: '#FFE5A0',
     path: '/game/speed-multiplication',
@@ -26,6 +47,7 @@ export const games: GameInfo[] = [
     name: 'Tes Kraepelin',
     description: 'Tes psikologi hitung koran legendaris. Jumlahkan 2 angka bersebelahan secara vertikal dan ketik digit satuannya secepat mungkin.',
     emoji: '📰',
+    icon: kraepelinIcon,
     color: 'bg-sky/30',
     accentColor: '#A8D8EA',
     path: '/game/kraepelin',
@@ -36,6 +58,7 @@ export const games: GameInfo[] = [
     name: 'Magic Square',
     description: 'Susun angka 1-9 ke dalam kisi 3x3 agar jumlah setiap baris, kolom, dan diagonal menghasilkan angka ajaib 15 yang sempurna.',
     emoji: '🔢',
+    icon: magicSquareIcon,
     color: 'bg-rose/30',
     accentColor: '#F4BFDB',
     path: '/game/magic-square',
@@ -46,6 +69,7 @@ export const games: GameInfo[] = [
     name: 'Sudoku',
     description: 'Teka-teki logika angka 9x9 klasik. Isi seluruh kisi tanpa ada angka yang berulang pada baris, kolom, maupun sub-grid 3x3.',
     emoji: '🧩',
+    icon: sudokuIcon,
     color: 'bg-lavender/30',
     accentColor: '#B8A9E8',
     path: '/game/sudoku',
@@ -56,6 +80,7 @@ export const games: GameInfo[] = [
     name: 'KenKen',
     description: 'Kombinasi unik sudoku dan aritmatika. Isi kisi angka sesuai petunjuk sangkar operasi penjumlahan, pengurangan, perkalian, atau pembagian.',
     emoji: '🧮',
+    icon: kenkenIcon,
     color: 'bg-mint/30',
     accentColor: '#A8E6CF',
     path: '/game/kenken',
@@ -66,19 +91,10 @@ export const games: GameInfo[] = [
     name: 'Kakuro',
     description: 'Teka-teki silang matematika (Cross-Sums). Isi kotak putih agar jumlah tiap deret angka tepat sama dengan petunjuk segitiga.',
     emoji: '➕',
+    icon: kakuroIcon,
     color: 'bg-peach/20',
     accentColor: '#FFB5A7',
     path: '/game/kakuro',
-    available: true,
-  },
-  {
-    id: 'math-scrabble',
-    name: 'Math Scrabble',
-    description: 'Bentuk persamaan matematika silang pada papan 15x15 dengan ubin angka, simbol, dan kotak pengganda skor!',
-    emoji: '🔤',
-    color: 'bg-lavender/30',
-    accentColor: '#8C7AE6',
-    path: '/game/math-scrabble',
     available: true,
   },
 ];

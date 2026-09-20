@@ -267,24 +267,29 @@ export default function MathScrabble() {
 
               // Determine cell multiplier background & label
               let bgClass = 'bg-white';
-              let labelText = '';
+              let multPrefix = '';
+              let multSuffix = '';
               let labelClass = '';
 
               if (cell.multiplier === 'x3_score') {
                 bgClass = 'bg-[#F26B6B]';
-                labelText = 'x3 score';
+                multPrefix = 'X3';
+                multSuffix = 'SCORE';
                 labelClass = 'text-white';
               } else if (cell.multiplier === 'x2_score') {
                 bgClass = 'bg-[#F8A5A5]';
-                labelText = 'x2 score';
+                multPrefix = 'X2';
+                multSuffix = 'SCORE';
                 labelClass = 'text-white';
               } else if (cell.multiplier === 'x3_point') {
                 bgClass = 'bg-[#4A90E2]';
-                labelText = 'x3 point';
+                multPrefix = 'X3';
+                multSuffix = 'POINT';
                 labelClass = 'text-white';
               } else if (cell.multiplier === 'x2_point') {
                 bgClass = 'bg-[#A8D8EA]';
-                labelText = 'x2 point';
+                multPrefix = 'X2';
+                multSuffix = 'POINT';
                 labelClass = 'text-charcoal';
               } else if (isCenter) {
                 bgClass = 'bg-[#FCE38A]';
@@ -313,10 +318,15 @@ export default function MathScrabble() {
                     <>
                       {isCenter ? (
                         <span className="text-sm sm:text-base leading-none">⭐️</span>
-                      ) : labelText ? (
-                        <span className={`text-[4.5px] sm:text-[7.5px] font-black uppercase text-center leading-[5.5px] sm:leading-[8px] tracking-tighter px-[0.5px] ${labelClass}`}>
-                          {labelText}
-                        </span>
+                      ) : multPrefix ? (
+                        <div className={`flex flex-col items-center justify-center leading-none select-none gap-[1px] ${labelClass}`}>
+                          <span className="text-[4.5px] sm:text-[7.5px] font-black leading-none">
+                            {multPrefix}
+                          </span>
+                          <span className="text-[3.5px] sm:text-[6px] font-extrabold uppercase leading-none tracking-tight">
+                            {multSuffix}
+                          </span>
+                        </div>
                       ) : null}
                     </>
                   )}
