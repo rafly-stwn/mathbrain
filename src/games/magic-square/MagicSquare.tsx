@@ -112,7 +112,7 @@ export default function MagicSquare() {
 
           <div className="flex justify-center">
             <Button size="lg" className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5" onClick={() => startGame(selectedDiff)}>
-              Mulai Permainan 🎮
+              Mulai Permainan
             </Button>
           </div>
         </Card>

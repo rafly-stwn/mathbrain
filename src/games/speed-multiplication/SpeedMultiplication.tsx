@@ -7,7 +7,7 @@ import InstructionModal from '../../components/ui/InstructionModal';
 import { useSpeedMultiplication } from './useSpeedMultiplication';
 import { useGameStore } from '../../stores/gameStore';
 import type { Difficulty } from '../../types';
-import { Play, RotateCcw, Home, Trophy, Target, Zap, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { RotateCcw, Home, Target, Zap, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 export default function SpeedMultiplication() {
   const navigate = useNavigate();
@@ -72,78 +72,62 @@ export default function SpeedMultiplication() {
 
   if (phase === 'setup') {
     return (
-      <div className="max-w-2xl mx-auto space-y-6 py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="flex justify-start">
-          <Button variant="secondary" onClick={() => navigate('/')}>
-            <ArrowLeft className="w-5 h-5 mr-2" /> Kembali ke Beranda
+      <div className="max-w-md mx-auto p-4 space-y-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
+            <ArrowLeft className="w-6 h-6" />
           </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Perkalian Cepat ✖️</h1>
         </div>
 
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center p-4 bg-lemon/20 rounded-full mb-2">
-            <Zap className="w-10 h-10 text-lemon" />
-          </div>
-          <h1 className="text-4xl font-bold text-charcoal">Perkalian Cepat ✖️</h1>
-          <p className="text-base text-secondary max-w-lg mx-auto leading-relaxed">
+        <Card className="p-6 bg-white border-2 border-lemon">
+          <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
             Tantang kemampuan perkalian dalam tekanan waktu 60 detik. Buktikan seberapa cepat dan akurat kalkulasi angka Anda!
           </p>
-        </div>
 
-        {/* Cara Bermain box matching Math Scrabble style */}
-        <div className="w-full bg-cream/70 rounded-2xl p-4 border border-lavender/20 text-left text-xs space-y-2">
-          <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
-          <div className="flex items-start gap-2">
-            <span className="text-sm">✖️</span>
-            <span>Selesaikan operasi perkalian angka yang muncul di layar secepat mungkin.</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-sm">⌨️</span>
-            <span>Ketik angka jawaban pada kolom input lalu tekan <strong>Enter</strong>.</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-sm">🔥</span>
-            <span>Pertahankan streak jawaban benar tanpa salah untuk meraih skor tertinggi!</span>
-          </div>
-        </div>
-
-        <Card className="p-6">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-charcoal flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-lemon" />
-                Skor Terbaik: {bestScore} poin
-              </h2>
-              <Button variant="ghost" onClick={() => setShowInstructions(true)} className="text-xs font-bold text-warmgray">
-                Panduan
-              </Button>
+          {/* Cara Bermain box */}
+          <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
+            <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">✖️</span>
+              <span>Selesaikan operasi perkalian angka yang muncul di layar secepat mungkin.</span>
             </div>
-
-            <div className="space-y-3">
-              <label className="block text-sm font-bold text-charcoal">
-                Pilih Tingkat Kesulitan
-              </label>
-              <div className="flex justify-center">
-                <DifficultySelector
-                  selected={selectedDifficulty}
-                  onChange={setSelectedDifficulty}
-                />
-              </div>
-              
-              <div className="mt-3 text-xs text-secondary text-center p-3 bg-warmgray/10 rounded-xl font-medium">
-                {selectedDifficulty === 'easy' && 'Mudah: Perkalian 1 digit (contoh: 7 × 8)'}
-                {selectedDifficulty === 'medium' && 'Sedang: Campuran 2 digit dan 1 digit (contoh: 24 × 7)'}
-                {selectedDifficulty === 'hard' && 'Sulit: Perkalian 2 digit (contoh: 15 × 23)'}
-              </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">⌨️</span>
+              <span>Ketik angka jawaban pada kolom input lalu tekan <strong>Enter</strong>.</span>
             </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">🔥</span>
+              <span>Pertahankan streak jawaban benar tanpa salah untuk meraih skor tertinggi!</span>
+            </div>
+          </div>
 
+          <div className="flex justify-center mb-3">
+            <DifficultySelector
+              selected={selectedDifficulty}
+              onChange={setSelectedDifficulty}
+            />
+          </div>
+
+          <div className="text-xs text-center text-secondary mb-6 font-medium">
+            {selectedDifficulty === 'easy' && 'Mudah: Perkalian 1 digit (contoh: 7 × 8)'}
+            {selectedDifficulty === 'medium' && 'Sedang: Campuran 2 digit dan 1 digit (contoh: 24 × 7)'}
+            {selectedDifficulty === 'hard' && 'Sulit: Perkalian 2 digit (contoh: 15 × 23)'}
+          </div>
+
+          {bestScore > 0 && (
+            <div className="text-center p-3 bg-lemon/20 rounded-xl text-charcoal font-bold text-sm mb-6">
+              🏆 Skor Terbaik: {bestScore} poin
+            </div>
+          )}
+
+          <div className="flex justify-center">
             <Button
               size="lg"
-              fullWidth
+              className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5"
               onClick={handleStart}
-              className="mt-6 bg-charcoal hover:bg-black text-white font-black py-4 text-base"
             >
-              <Play className="w-5 h-5 mr-2" />
-              Mulai Permainan 🎮
+              Mulai Permainan
             </Button>
           </div>
         </Card>

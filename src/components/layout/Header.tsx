@@ -22,11 +22,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-lavender/10">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Mobile placeholder / spacing */}
-        <div className="md:hidden w-8" />
-
         {/* Logo */}
-        <Link to="/" className="font-extrabold text-2xl text-charcoal md:flex-none flex-1 text-center md:text-left tracking-tight">
+        <Link to="/" className="font-extrabold text-2xl text-charcoal text-left tracking-tight">
           MathBrain
         </Link>
 

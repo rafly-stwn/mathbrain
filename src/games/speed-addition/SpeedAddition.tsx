@@ -75,63 +75,59 @@ const SpeedAddition: React.FC = () => {
       <div className="max-w-3xl mx-auto px-4 py-8">
         
         {phase === 'setup' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center text-center space-y-6"
-          >
-            <div className="w-full flex justify-start">
-              <Button variant="secondary" onClick={() => navigate('/')}>
-                <ArrowLeft className="w-5 h-5 mr-2" /> Kembali ke Beranda
+          <div className="max-w-md mx-auto space-y-6">
+            <div className="flex items-center gap-4 mb-4">
+              <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
+                <ArrowLeft className="w-6 h-6" />
               </Button>
+              <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Penjumlahan Cepat ⚡</h1>
             </div>
-            
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-3">Penjumlahan Cepat ⚡</h1>
-              <p className="text-base md:text-lg text-[#636E72] max-w-lg mx-auto leading-relaxed">
+
+            <Card className="p-6 bg-white border-2 border-peach">
+              <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
                 Selesaikan sebanyak mungkin operasi penjumlahan dalam 60 detik. Uji ketangkasan hitung dan konsentrasi mentalmu!
               </p>
-            </div>
 
-            {/* Cara Bermain box matching Math Scrabble style */}
-            <div className="w-full max-w-md bg-cream/70 rounded-2xl p-4 border border-lavender/20 text-left text-xs space-y-2">
-              <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">⚡</span>
-                <span>Jawab soal penjumlahan yang muncul di layar secepat dan setepat mungkin.</span>
+              {/* Cara Bermain box */}
+              <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
+                <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm">⚡</span>
+                  <span>Jawab soal penjumlahan yang muncul di layar secepat dan setepat mungkin.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm">⌨️</span>
+                  <span>Ketik angka jawaban pada kotak input lalu tekan <strong>Enter</strong>.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm">🔥</span>
+                  <span>Pertahankan streak jawaban benar tanpa salah untuk meraih skor tertinggi!</span>
+                </div>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">⌨️</span>
-                <span>Ketik angka jawaban pada kotak input lalu tekan <strong>Enter</strong>.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">🔥</span>
-                <span>Pertahankan streak jawaban benar tanpa salah untuk meraih skor tertinggi!</span>
-              </div>
-            </div>
 
-            <Card className="w-full max-w-md p-6 bg-white rounded-[20px]">
-              <h2 className="text-lg font-bold mb-4">Pilih Tingkat Kesulitan</h2>
               <div className="flex justify-center mb-3">
                 <DifficultySelector selected={difficulty} onChange={handleDifficultyChange} />
               </div>
-              <div className="text-xs text-[#636E72] bg-[#B8A9E8]/10 p-3 rounded-lg font-medium">
+
+              <div className="text-xs text-center text-secondary mb-6 font-medium">
                 {difficulty === 'easy' && 'Mudah: Penjumlahan angka 1 digit (contoh: 3 + 7)'}
                 {difficulty === 'medium' && 'Sedang: Penjumlahan angka 2 digit (contoh: 24 + 58)'}
                 {difficulty === 'hard' && 'Sulit: Penjumlahan 3 angka (contoh: 24 + 58 + 13)'}
               </div>
-            </Card>
 
-            {bestScore > 0 && (
-              <div className="text-base font-semibold text-emerald-600">
-                🏆 Skor Terbaik Anda: {bestScore} poin
+              {bestScore > 0 && (
+                <div className="text-center p-3 bg-peach/15 rounded-xl text-charcoal font-bold text-sm mb-6">
+                  🏆 Skor Terbaik: {bestScore} poin
+                </div>
+              )}
+
+              <div className="flex justify-center">
+                <Button size="lg" className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5" onClick={startGame}>
+                  Mulai Permainan
+                </Button>
               </div>
-            )}
-
-            <Button variant="primary" size="lg" className="w-full max-w-md py-4 text-lg font-black bg-charcoal hover:bg-black text-white" onClick={startGame}>
-              Mulai Permainan 🎮
-            </Button>
-          </motion.div>
+            </Card>
+          </div>
         )}
 
         {phase === 'playing' && (

@@ -52,29 +52,22 @@ export default function MathScrabble() {
 
   if (phase === 'setup') {
     return (
-      <div className="min-h-[85vh] p-4 md:p-8 flex flex-col items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-lg bg-white rounded-card shadow-card p-6 sm:p-8 border border-lavender/20 text-center flex flex-col items-center"
-        >
+      <div className="max-w-md mx-auto p-4 space-y-6">
+        <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => {
               soundService.playClick();
               navigate('/');
             }}
-            className="self-start flex items-center gap-1.5 text-warmgray hover:text-charcoal text-xs font-bold mb-4"
+            className="p-2 hover:bg-black/5 rounded-full transition-colors text-charcoal"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Beranda</span>
+            <ArrowLeft className="w-6 h-6" />
           </button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Math Scrabble 🔤</h1>
+        </div>
 
-          <div className="w-16 h-16 rounded-3xl bg-lavender/20 text-lavender flex items-center justify-center text-3xl mb-3 shadow-inner">
-            🔤
-          </div>
-
-          <h1 className="text-3xl font-black text-charcoal mb-2">Math Scrabble 📐</h1>
-          <p className="text-xs sm:text-sm text-warmgray mb-6 max-w-sm leading-relaxed">
+        <div className="bg-white rounded-card shadow-card p-6 border-2 border-lavender/40 text-center">
+          <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
             Bentuk persamaan matematika silang pada papan 15x15. Gunakan ubin kartu di rakmu dan manfaatkan kotak pengganda skor!
           </p>
 
@@ -95,8 +88,8 @@ export default function MathScrabble() {
           </div>
 
           {bestScore > 0 && (
-            <div className="text-xs font-bold text-warmgray mb-4">
-              Skor Terbaik Anda: <strong className="text-charcoal font-black">{bestScore} poin</strong>
+            <div className="text-center p-3 bg-lavender/10 rounded-xl text-charcoal font-bold text-sm mb-6">
+              🏆 Skor Terbaik: {bestScore} poin
             </div>
           )}
 
@@ -105,11 +98,11 @@ export default function MathScrabble() {
               soundService.playClick();
               startGame(1200);
             }}
-            className="w-full py-3.5 rounded-button bg-charcoal hover:bg-black text-white font-extrabold text-base shadow-sm active:scale-95 transition-all"
+            className="w-full py-3.5 rounded-button bg-charcoal hover:bg-black text-white font-black text-base shadow-sm active:scale-95 transition-all"
           >
-            Mulai Permainan Solo 🎮
+            Mulai Permainan
           </button>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -321,7 +314,7 @@ export default function MathScrabble() {
                       {isCenter ? (
                         <span className="text-sm sm:text-base leading-none">⭐️</span>
                       ) : labelText ? (
-                        <span className={`text-[6px] sm:text-[8px] font-black uppercase text-center leading-[9px] ${labelClass}`}>
+                        <span className={`text-[4.5px] sm:text-[7.5px] font-black uppercase text-center leading-[5.5px] sm:leading-[8px] tracking-tighter px-[0.5px] ${labelClass}`}>
                           {labelText}
                         </span>
                       ) : null}

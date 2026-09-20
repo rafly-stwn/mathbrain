@@ -1,13 +1,17 @@
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Undo2, Eraser, Lightbulb, Trophy } from 'lucide-react';
+import { ArrowLeft, Undo2, Eraser, Lightbulb } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import DifficultySelector from '../../components/ui/DifficultySelector';
 import { useKakuro } from './useKakuro';
 import type { Difficulty } from '../../types';
 import { useGameStore } from '../../stores/gameStore';
 
 export default function Kakuro() {
   const navigate = useNavigate();
+  const [selectedDiff, setSelectedDiff] = useState<Difficulty>('easy');
   const {
     phase,
     difficulty,
@@ -78,73 +82,62 @@ export default function Kakuro() {
       <div className="max-w-4xl mx-auto">
         <AnimatePresence mode="wait">
           {phase === 'setup' && (
-            <motion.div
-              key="setup"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-[20px] shadow-sm p-6 md:p-10 text-center max-w-xl mx-auto"
-            >
-              <div className="flex justify-start mb-4">
-                <button
-                  onClick={() => navigate('/')}
-                  className="flex items-center gap-1.5 text-warmgray hover:text-charcoal text-xs font-bold p-1"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Kembali ke Beranda</span>
-                </button>
+            <div className="max-w-md mx-auto p-4 space-y-6">
+              <div className="flex items-center gap-4 mb-4">
+                <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+                <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Kakuro ➕</h1>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-[#2D3436]">
-                Kakuro ➕
-              </h1>
-              <p className="text-[#636E72] mb-6 text-xs sm:text-sm leading-relaxed">
-                Teka-teki silang matematika (Cross-Sums). Isi kotak putih agar jumlah tiap deret angka tepat sama dengan petunjuk segitiga.
-              </p>
+              <Card className="p-6 bg-white border-2 border-peach/50">
+                <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
+                  Teka-teki silang matematika (Cross-Sums). Isi kotak putih agar jumlah tiap deret angka tepat sama dengan petunjuk segitiga.
+                </p>
 
-              {/* Cara Bermain box matching Math Scrabble style */}
-              <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
-                <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
-                <div className="flex items-start gap-2">
-                  <span className="text-sm">➕</span>
-                  <span>Isi kotak putih dengan angka 1 sampai 9.</span>
+                {/* Cara Bermain box */}
+                <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
+                  <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">➕</span>
+                    <span>Isi kotak putih dengan angka 1 sampai 9.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">🎯</span>
+                    <span>Jumlah angka dalam satu deret mendatar/menurun harus sesuai dengan angka petunjuk segitiga.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">🚫</span>
+                    <span>Tidak boleh ada angka yang berulang dalam satu deret penjumlahan yang sama.</span>
+                  </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-sm">🎯</span>
-                  <span>Jumlah angka dalam satu deret mendatar/menurun harus sesuai dengan angka petunjuk segitiga.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-sm">🚫</span>
-                  <span>Tidak boleh ada angka yang berulang dalam satu deret penjumlahan yang sama.</span>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                {(['easy', 'medium', 'hard'] as Difficulty[]).map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => startGame(d)}
-                    className="flex flex-col items-center p-4 rounded-2xl border-2 border-transparent hover:border-[#FFB5A7] bg-[#FFF9F5] transition-all hover:-translate-y-1 shadow-xs"
-                  >
-                    <span className="text-base font-bold mb-1">
-                      {d === 'easy' ? 'Mudah' : d === 'medium' ? 'Sedang' : 'Sulit'}
-                    </span>
-                    <span className="text-[11px] text-[#636E72] text-center">
-                      {d === 'easy' && 'Kisi ringkas'}
-                      {d === 'medium' && 'Lebih silang'}
-                      {d === 'hard' && 'Kisi besar'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {bestScore > 0 && (
-                <div className="flex items-center justify-center gap-1.5 text-xs text-[#636E72] font-bold">
-                  <Trophy className="w-4 h-4 text-[#FFE5A0]" />
-                  <span>Skor Terbaik: {bestScore} poin</span>
+                <div className="flex justify-center mb-3">
+                  <DifficultySelector
+                    selected={selectedDiff}
+                    onChange={setSelectedDiff}
+                  />
                 </div>
-              )}
-            </motion.div>
+
+                <div className="text-xs text-center text-secondary mb-6 font-medium">
+                  {selectedDiff === 'easy' && 'Mudah: Kisi ringkas, cocok untuk santai'}
+                  {selectedDiff === 'medium' && 'Sedang: Kisi silang seimbang, menguji konsistensi'}
+                  {selectedDiff === 'hard' && 'Sulit: Kisi besar dengan petunjuk silang kompleks'}
+                </div>
+
+                {bestScore > 0 && (
+                  <div className="text-center p-3 bg-peach/15 rounded-xl text-charcoal font-bold text-sm mb-6">
+                    🏆 Skor Terbaik: {bestScore} poin
+                  </div>
+                )}
+
+                <div className="flex justify-center">
+                  <Button size="lg" className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5" onClick={() => startGame(selectedDiff)}>
+                    Mulai Permainan
+                  </Button>
+                </div>
+              </Card>
+            </div>
           )}
 
           {phase === 'playing' && puzzle && (

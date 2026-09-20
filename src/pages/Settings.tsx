@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import { soundService } from '../services/soundService';
-import { Heart, Code, Gamepad2, ExternalLink } from 'lucide-react';
+import { Heart, Code, ExternalLink } from 'lucide-react';
 
 export default function Settings() {
   const { settings, toggleSound, resetStats } = useGameStore();
@@ -87,65 +87,18 @@ export default function Settings() {
           </span>
         </div>
 
-        {/* Creator / Lead Designer Spotlight */}
+        {/* Creator Spotlight */}
         <div className="p-4 rounded-2xl bg-gradient-to-r from-peach/15 via-lemon/15 to-mint/15 border border-lavender/30 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border-2 border-lavender/40 flex items-center justify-center text-3xl shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border-2 border-lavender/40 flex items-center justify-center text-2xl shrink-0">
             👑
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-black px-2 py-0.5 bg-white text-charcoal rounded-md shadow-2xs border border-lavender/20">
-                Pencipta & Pengembang
-              </span>
-            </div>
-            <h3 className="font-black text-charcoal text-lg sm:text-xl truncate mt-0.5">
+            <span className="text-[10px] sm:text-xs font-black px-2 py-0.5 bg-white text-charcoal rounded-md shadow-2xs border border-lavender/20">
+              Pencipta & Pengembang
+            </span>
+            <h3 className="font-black text-charcoal text-lg sm:text-xl truncate mt-1">
               Kolorbapa
             </h3>
-            <p className="text-xs text-warmgray mt-0.5 leading-relaxed">
-              Penggagas ide orisinal, perancang mekanisme 8 variasi teka-teki matematika, board game Math Scrabble, dan sistem duel interaktif real-time.
-            </p>
-          </div>
-        </div>
-
-        {/* 8 Koleksi Permainan */}
-        <div>
-          <h4 className="text-xs font-black text-warmgray uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Gamepad2 className="w-3.5 h-3.5 text-lavender-dark" />
-            <span>Koleksi 8 Permainan Matematika</span>
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold text-charcoal">
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">⚡</span>
-              <span>Penjumlahan Cepat</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">✖️</span>
-              <span>Perkalian Cepat</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">📊</span>
-              <span>Tes Kraepelin</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">🧩</span>
-              <span>Magic Square</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">🔢</span>
-              <span>Sudoku Klasik</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">🎯</span>
-              <span>KenKen Puzzle</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">📐</span>
-              <span>Kakuro Cross-Sums</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-cream/70 border border-lavender/15 text-center">
-              <span className="text-lg block mb-0.5">🎲</span>
-              <span>Math Scrabble</span>
-            </div>
           </div>
         </div>
 

@@ -72,69 +72,65 @@ export default function Kraepelin() {
 
   if (phase === 'setup') {
     return (
-      <div className="min-h-screen bg-[#FFF9F5] p-4 md:p-8 flex flex-col items-center">
-        <div className="w-full max-w-2xl">
-          <button 
-            onClick={() => navigate('/')}
-            className="flex items-center text-charcoal/60 hover:text-charcoal mb-6 transition-colors text-sm font-bold"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Kembali ke Beranda
-          </button>
-          
-          <Card className="p-8 border-t-8 border-t-sky text-center flex flex-col items-center">
-            <h1 className="text-4xl font-bold text-charcoal mb-3">Tes Kraepelin 📰</h1>
-            <p className="text-base text-charcoal/70 mb-6 max-w-md mx-auto leading-relaxed">
-              Tes psikologi hitung koran legendaris. Jumlahkan 2 angka bersebelahan secara vertikal dan ketik digit satuannya secepat mungkin.
-            </p>
-            
-            {/* Cara Bermain box matching Math Scrabble style */}
-            <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
-              <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">📰</span>
-                <span>Jumlahkan 2 angka bersebelahan dari bawah ke atas pada kolom vertikal.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">🔢</span>
-                <span>Ketik HANYA <strong>digit satuan</strong> hasil penjumlahan:</span>
-              </div>
-              <div className="bg-white/80 p-2 rounded-xl text-center font-mono font-bold text-xs space-y-1 my-1">
-                <div>3 + 7 = 10 ➔ ketik <span className="text-sky font-black text-sm">0</span></div>
-                <div>7 + 2 = 9 ➔ ketik <span className="text-sky font-black text-sm">9</span></div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">⚡</span>
-                <span>Jaga kecepatan dan ketelitian hingga waktu di tiap kolom berganti otomatis.</span>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <DifficultySelector
-                selected={difficulty}
-                onChange={setDifficulty}
-              />
-            </div>
-            
-            <div className="flex justify-center gap-3 text-xs text-charcoal/60 mb-6 font-medium">
-              <span>Mudah: 5 kolom (60 dtk)</span>
-              <span>•</span>
-              <span>Sedang: 8 kolom (45 dtk)</span>
-              <span>•</span>
-              <span>Sulit: 10 kolom (30 dtk)</span>
-            </div>
-
-            {bestScore > 0 && (
-              <div className="text-sm font-bold text-sky mb-6">
-                🏆 Skor Terbaik Anda: {bestScore} poin
-              </div>
-            )}
-
-            <Button size="lg" onClick={startGame} className="w-full md:w-auto bg-charcoal hover:bg-black text-white min-w-[220px] font-black py-3.5">
-              Mulai Tes 🎮
-            </Button>
-          </Card>
+      <div className="max-w-md mx-auto p-4 space-y-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Tes Kraepelin 📰</h1>
         </div>
+
+        <Card className="p-6 bg-white border-2 border-sky">
+          <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
+            Tes psikologi hitung koran legendaris. Jumlahkan 2 angka bersebelahan secara vertikal dan ketik digit satuannya secepat mungkin.
+          </p>
+
+          {/* Cara Bermain box */}
+          <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
+            <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">📰</span>
+              <span>Jumlahkan 2 angka bersebelahan dari bawah ke atas pada kolom vertikal.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">🔢</span>
+              <span>Ketik HANYA <strong>digit satuan</strong> hasil penjumlahan:</span>
+            </div>
+            <div className="bg-white/80 p-2 rounded-xl text-center font-mono font-bold text-xs space-y-1 my-1">
+              <div>3 + 7 = 10 ➔ ketik <span className="text-sky font-black text-sm">0</span></div>
+              <div>7 + 2 = 9 ➔ ketik <span className="text-sky font-black text-sm">9</span></div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">⚡</span>
+              <span>Jaga kecepatan dan ketelitian hingga waktu di tiap kolom berganti otomatis.</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center mb-3">
+            <DifficultySelector
+              selected={difficulty}
+              onChange={setDifficulty}
+            />
+          </div>
+
+          <div className="text-xs text-center text-secondary mb-6 font-medium">
+            {difficulty === 'easy' && 'Mudah: 5 kolom (60 detik per kolom)'}
+            {difficulty === 'medium' && 'Sedang: 8 kolom (45 detik per kolom)'}
+            {difficulty === 'hard' && 'Sulit: 10 kolom (30 detik per kolom)'}
+          </div>
+
+          {bestScore > 0 && (
+            <div className="text-center p-3 bg-sky/20 rounded-xl text-charcoal font-bold text-sm mb-6">
+              🏆 Skor Terbaik: {bestScore} poin
+            </div>
+          )}
+
+          <div className="flex justify-center">
+            <Button size="lg" onClick={startGame} className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5">
+              Mulai Permainan
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

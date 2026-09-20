@@ -533,7 +533,7 @@ export default function MathScrabbleDuel({
                       {isCenter ? (
                         <span className="text-xs sm:text-sm leading-none">⭐️</span>
                       ) : labelText ? (
-                        <span className={`text-[6px] sm:text-[7.5px] font-black uppercase text-center leading-[8px] ${labelClass}`}>
+                        <span className={`text-[4.5px] sm:text-[7.5px] font-black uppercase text-center leading-[5.5px] sm:leading-[8px] tracking-tighter px-[0.5px] ${labelClass}`}>
                           {labelText}
                         </span>
                       ) : null}

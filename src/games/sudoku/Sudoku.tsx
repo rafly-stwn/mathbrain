@@ -1,14 +1,18 @@
-import { useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Eraser, Pencil, Lightbulb } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import DifficultySelector from '../../components/ui/DifficultySelector';
 import { useSudoku } from './useSudoku';
 import { useGameStore } from '../../stores/gameStore';
 import type { Difficulty } from '../../types';
 
 export default function Sudoku() {
   const navigate = useNavigate();
+  const [selectedDiff, setSelectedDiff] = useState<Difficulty>('easy');
   const { scores } = useGameStore();
   const {
     phase,
@@ -104,61 +108,61 @@ export default function Sudoku() {
 
   if (phase === 'setup') {
     return (
-      <div className="min-h-screen bg-[#FFF9F5] text-charcoal font-nunito p-4 flex flex-col items-center">
-        <div className="w-full max-w-md mt-6">
-          <button onClick={() => navigate('/')} className="mb-4 flex items-center text-secondary hover:text-charcoal transition-colors text-sm font-bold">
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Kembali ke Beranda
-          </button>
-          
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-[20px] p-6 sm:p-8 shadow-sm text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-[#B8A9E8]">Sudoku 🧩</h1>
-            <p className="text-xs sm:text-sm text-secondary mb-6 leading-relaxed">
-              Teka-teki logika angka 9x9 klasik. Isi seluruh kisi tanpa ada angka yang berulang pada baris, kolom, maupun sub-grid 3x3.
-            </p>
-
-            {/* Cara Bermain box matching Math Scrabble style */}
-            <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
-              <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">🧩</span>
-                <span>Isi seluruh kotak kisi 9x9 dengan angka 1 sampai 9.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">⚖️</span>
-                <span>Setiap baris, kolom, dan sub-grid 3x3 tidak boleh memiliki angka yang sama.</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">✏️</span>
-                <span>Gunakan fitur <strong>Catatan (Notes)</strong> untuk menandai kemungkinan kandidat angka.</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => (
-                <button
-                  key={diff}
-                  onClick={() => startGame(diff)}
-                  className="w-full p-4 rounded-xl border-2 border-transparent bg-gray-50 hover:border-[#B8A9E8] hover:bg-[#B8A9E8]/10 transition-all text-left flex justify-between items-center group shadow-xs"
-                >
-                  <div>
-                    <h3 className="font-bold text-base text-charcoal group-hover:text-[#B8A9E8]">
-                      {diff === 'easy' ? 'Mudah' : diff === 'medium' ? 'Sedang' : 'Sulit'}
-                    </h3>
-                    <p className="text-xs text-secondary mt-0.5">
-                      {diff === 'easy' && 'Lebih banyak petunjuk awal, cocok untuk santai'}
-                      {diff === 'medium' && 'Tantangan seimbang, menguji logika deduksi'}
-                      {diff === 'hard' && 'Sedikit petunjuk, butuh teknik logika mendalam'}
-                    </p>
-                  </div>
-                  <div className="text-right text-xs font-bold text-secondary">
-                    Terbaik: {getBestScore(diff)}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </motion.div>
+      <div className="max-w-md mx-auto p-4 space-y-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Sudoku 🧩</h1>
         </div>
+
+        <Card className="p-6 bg-white border-2 border-lavender">
+          <p className="text-sm md:text-base text-secondary mb-6 text-center font-medium leading-relaxed">
+            Teka-teki logika angka 9x9 klasik. Isi seluruh kisi tanpa ada angka yang berulang pada baris, kolom, maupun sub-grid 3x3.
+          </p>
+
+          {/* Cara Bermain box */}
+          <div className="w-full bg-cream/70 rounded-2xl p-4 mb-6 border border-lavender/20 text-left text-xs space-y-2">
+            <div className="font-black text-charcoal uppercase tracking-wider mb-1">Cara Bermain:</div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">🧩</span>
+              <span>Isi seluruh kotak kisi 9x9 dengan angka 1 sampai 9.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">⚖️</span>
+              <span>Setiap baris, kolom, dan sub-grid 3x3 tidak boleh memiliki angka yang sama.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-sm">✏️</span>
+              <span>Gunakan fitur <strong>Catatan (Notes)</strong> untuk menandai kemungkinan kandidat angka.</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center mb-3">
+            <DifficultySelector
+              selected={selectedDiff}
+              onChange={setSelectedDiff}
+            />
+          </div>
+
+          <div className="text-xs text-center text-secondary mb-6 font-medium">
+            {selectedDiff === 'easy' && 'Mudah: Lebih banyak petunjuk awal, cocok untuk santai'}
+            {selectedDiff === 'medium' && 'Sedang: Tantangan seimbang, menguji logika deduksi'}
+            {selectedDiff === 'hard' && 'Sulit: Sedikit petunjuk awal, butuh teknik logika mendalam'}
+          </div>
+
+          {getBestScore(selectedDiff) > 0 && (
+            <div className="text-center p-3 bg-lavender/15 rounded-xl text-charcoal font-bold text-sm mb-6">
+              🏆 Skor Terbaik: {getBestScore(selectedDiff)} poin
+            </div>
+          )}
+
+          <div className="flex justify-center">
+            <Button size="lg" className="w-full text-base bg-charcoal hover:bg-black text-white font-black py-3.5" onClick={() => startGame(selectedDiff)}>
+              Mulai Permainan
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
