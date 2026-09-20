@@ -116,6 +116,9 @@ export function useMathScrabble() {
   // Select a tile from rack
   const selectRackTile = useCallback((tile: Tile) => {
     soundService.playClick();
+    if (tile.isJoker || tile.char === '★') {
+      setShowJokerToast(false);
+    }
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
   }, []);
 
@@ -126,6 +129,7 @@ export function useMathScrabble() {
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
+    setShowJokerToast(false);
     soundService.playTilePlace();
     const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
     setPendingPlacements(newPlacements);

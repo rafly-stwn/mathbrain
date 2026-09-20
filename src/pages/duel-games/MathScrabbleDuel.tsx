@@ -4,7 +4,7 @@ import { Clock, AlertCircle, CheckCircle, Info, Sparkles } from 'lucide-react';
 import { BOARD_SIZE, RACK_SIZE, BOARD_MULTIPLIERS, MAX_ZERO_MOVES } from '../../games/math-scrabble/constants';
 import { createTileBag, drawTiles } from '../../games/math-scrabble/tileBag';
 import { validateMove } from '../../games/math-scrabble/mathValidator';
-import JokerToastBanner from '../../games/math-scrabble/JokerToastBanner';
+import JokerNotificationModal from '../../games/math-scrabble/JokerNotificationModal';
 import JokerPickerModal from '../../games/math-scrabble/JokerPickerModal';
 import { soundService } from '../../services/soundService';
 import type { BoardCell, Tile, Placement } from '../../games/math-scrabble/types';
@@ -221,6 +221,9 @@ export default function MathScrabbleDuel({
   const selectRackTile = useCallback((tile: Tile) => {
     if (!isMyTurn) return;
     soundService.playClick();
+    if (tile.isJoker || tile.char === '★') {
+      setShowJokerToast(false);
+    }
     setSelectedRackTile(prev => (prev?.id === tile.id ? null : tile));
   }, [isMyTurn]);
 
@@ -231,6 +234,7 @@ export default function MathScrabbleDuel({
     if (board[r][c].tile !== null) return;
     if (pendingPlacements.some(p => p.r === r && p.c === c)) return;
 
+    setShowJokerToast(false);
     soundService.playTilePlace();
     setLastOpponentPlacements([]); // Clear highlight when player moves
     const newPlacements = [...pendingPlacements, { r, c, tile: tileToPlace }];
@@ -572,6 +576,7 @@ export default function MathScrabbleDuel({
                     if (isPending) {
                       recallTile(r, c);
                     } else if (cell.tile === null && selectedRackTile && isMyTurn) {
+                      setShowJokerToast(false);
                       if (selectedRackTile.isJoker || selectedRackTile.char === '★') {
                         setJokerTargetCell({ r, c });
                       } else {
@@ -799,9 +804,9 @@ export default function MathScrabbleDuel({
         )}
       </div>
 
-      {/* Fitur 3: Notifikasi Toast Meluncur dari Atas & Mini-Picker saat Ditaruh */}
-      <JokerToastBanner
-        show={showJokerToast}
+      {/* Fitur 3: Notifikasi Popup Kartu Joker & Mini-Picker saat Ditaruh */}
+      <JokerNotificationModal
+        isOpen={showJokerToast}
         onClose={() => setShowJokerToast(false)}
       />
 

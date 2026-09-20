@@ -5,7 +5,7 @@ import { ArrowLeft, Clock, RotateCcw, AlertCircle, CheckCircle, Info, Sparkles }
 import confetti from 'canvas-confetti';
 import { useMathScrabble } from './useMathScrabble';
 import { validateMove } from './mathValidator';
-import JokerToastBanner from './JokerToastBanner';
+import JokerNotificationModal from './JokerNotificationModal';
 import JokerPickerModal from './JokerPickerModal';
 import { soundService } from '../../services/soundService';
 
@@ -327,6 +327,7 @@ export default function MathScrabble() {
                     if (isPending) {
                       recallTile(r, c);
                     } else if (cell.tile === null && selectedRackTile) {
+                      setShowJokerToast(false);
                       if (selectedRackTile.isJoker || selectedRackTile.char === '★') {
                         setJokerTargetCell({ r, c });
                       } else {
@@ -548,9 +549,9 @@ export default function MathScrabble() {
         )}
       </div>
 
-      {/* Fitur 3: Notifikasi Toast Meluncur dari Atas & Mini-Picker saat Ditaruh */}
-      <JokerToastBanner
-        show={showJokerToast}
+      {/* Fitur 3: Notifikasi Popup Kartu Joker & Mini-Picker saat Ditaruh */}
+      <JokerNotificationModal
+        isOpen={showJokerToast}
         onClose={() => setShowJokerToast(false)}
       />
 
