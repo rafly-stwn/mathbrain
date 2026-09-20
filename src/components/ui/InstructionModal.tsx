@@ -13,7 +13,7 @@ export interface InstructionModalProps {
 
 const instructionData: Record<string, { title: string; steps: string[]; tip: string }> = {
   'speed-addition': {
-    title: 'Penjumlahan Cepat ⚡',
+    title: 'Penjumlahan Cepat',
     steps: [
       'Jawab soal penjumlahan secepat dan setepat mungkin!',
       'Ketik jawaban angka Anda pada kolom input lalu tekan Enter.',
@@ -22,7 +22,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Pertahankan jawaban benar beruntun (streak) untuk memicu skor bonus dan menjaga ritme berpikir.',
   },
   'speed-multiplication': {
-    title: 'Perkalian Cepat ✖️',
+    title: 'Perkalian Cepat',
     steps: [
       'Selesaikan operasi perkalian matematika berpacu dengan detik!',
       'Ketik jawaban hasil perkalian lalu tekan Enter.',
@@ -31,7 +31,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Gunakan trik perkalian cepat puluhan dan satuan agar dapat menjawab dalam hitungan detik.',
   },
   'kraepelin': {
-    title: 'Tes Kraepelin 📰',
+    title: 'Tes Kraepelin',
     steps: [
       'Jumlahkan 2 angka bersebelahan secara vertikal dari bawah ke atas.',
       'Tuliskan HANYA digit satuannya saja (contoh: 8 + 7 = 15, ketik angka 5).',
@@ -40,7 +40,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Jaga ritme dan tempo hitung yang stabil untuk membentuk kurva performa yang konsisten.',
   },
   'magic-square': {
-    title: 'Magic Square 🔢',
+    title: 'Magic Square',
     steps: [
       'Tempatkan angka 1 hingga 9 ke dalam kisi 3x3.',
       'Jumlah angka pada setiap baris, kolom, dan diagonal harus bernilai tepat sama (angka ajaib 15).',
@@ -49,7 +49,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Ingat kunci utamanya: angka 5 selalu menempati kotak pusat di tengah kisi 3x3!',
   },
   'sudoku': {
-    title: 'Sudoku 🧩',
+    title: 'Sudoku',
     steps: [
       'Isi seluruh kotak kisi 9x9 dengan angka 1 sampai 9.',
       'Setiap baris, kolom, dan sub-grid 3x3 tidak boleh memiliki angka yang sama.',
@@ -58,7 +58,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Mulai dari baris, kolom, atau sub-grid 3x3 yang sudah memiliki angka terisi paling banyak.',
   },
   'kenken': {
-    title: 'KenKen 🧮',
+    title: 'KenKen',
     steps: [
       'Isi kisi dengan angka 1 sampai N tanpa ada perulangan angka di baris atau kolom.',
       'Perhatikan sangkar bergaris tebal: angka di dalamnya harus menghasilkan target sesuai operatornya (+, −, ×, ÷).',
@@ -67,7 +67,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Isi sangkar satu kotak terlebih dahulu (angka gratis) untuk membuka petunjuk kotak di sekitarnya.',
   },
   'kakuro': {
-    title: 'Kakuro ➕',
+    title: 'Kakuro',
     steps: [
       'Teka-teki silang matematika: isi kotak putih dengan angka 1 sampai 9.',
       'Jumlah angka pada deret mendatar/menurun harus sesuai dengan angka petunjuk segitiganya.',
@@ -76,7 +76,7 @@ const instructionData: Record<string, { title: string; steps: string[]; tip: str
     tip: 'Hafalkan kombinasi angka unik, misalnya petunjuk 3 dari 2 kotak pasti berisi angka 1 dan 2.',
   },
   'math-scrabble': {
-    title: 'Math Scrabble 🔤',
+    title: 'Math Scrabble',
     steps: [
       'Letakkan ubin dari rak 8 kartu ke papan 15x15 untuk membentuk persamaan matematika yang valid.',
       'Setiap baris/kolom harus berupa persamaan seimbang dengan tanda sama dengan (=), misalnya 5 + 3 = 8 atau 7 × 2 = 14.',

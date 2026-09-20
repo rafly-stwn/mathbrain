@@ -77,7 +77,7 @@ export default function Kraepelin() {
           <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Tes Kraepelin 📰</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Tes Kraepelin</h1>
         </div>
 
         <Card className="p-6 bg-white border-2 border-sky">

@@ -87,7 +87,7 @@ export default function Kakuro() {
                 <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
-                <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Kakuro ➕</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Kakuro</h1>
               </div>
 
               <Card className="p-6 bg-white border-2 border-peach/50">
@@ -157,7 +157,7 @@ export default function Kakuro() {
                   <ArrowLeft className="w-4 h-4" />
                   <span>Kembali</span>
                 </button>
-                <div className="text-lg font-bold text-[#2D3436]">Kakuro ➕</div>
+                <div className="text-lg font-bold text-[#2D3436]">Kakuro</div>
                 <div className="text-xs font-bold text-red-500">
                   Kesalahan: {mistakes}
                 </div>

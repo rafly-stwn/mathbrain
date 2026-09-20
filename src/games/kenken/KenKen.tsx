@@ -73,7 +73,7 @@ export default function KenKen() {
           <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">KenKen 🧮</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">KenKen</h1>
         </div>
 
         <Card className="p-6 bg-white border-2 border-mint">
@@ -142,7 +142,7 @@ export default function KenKen() {
             <span>Kembali</span>
           </button>
           <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold text-[#2D3436]">KenKen 🧮</h2>
+            <h2 className="text-xl font-bold text-[#2D3436]">KenKen</h2>
             <span className="text-xs px-2.5 py-0.5 bg-[#A8E6CF] bg-opacity-40 text-[#2D3436] rounded-full mt-1 uppercase tracking-wider font-bold">
               {difficulty === 'easy' ? 'Mudah' : difficulty === 'medium' ? 'Sedang' : 'Sulit'}
             </span>

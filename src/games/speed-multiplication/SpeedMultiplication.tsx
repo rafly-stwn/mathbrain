@@ -77,7 +77,7 @@ export default function SpeedMultiplication() {
           <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Perkalian Cepat ✖️</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Perkalian Cepat</h1>
         </div>
 
         <Card className="p-6 bg-white border-2 border-lemon">
@@ -147,7 +147,7 @@ export default function SpeedMultiplication() {
           >
             <RotateCcw className="w-6 h-6" />
           </button>
-          <h2 className="text-xl font-bold hidden md:block">Perkalian Cepat ✖️</h2>
+          <h2 className="text-xl font-bold hidden md:block">Perkalian Cepat</h2>
           <div className={`px-4 py-1.5 rounded-full font-bold text-lg transition-colors ${
             timeLeft < 10 ? 'bg-red-500/30 text-red-600 animate-pulse' : 'bg-lemon/30 text-charcoal'
           }`}>

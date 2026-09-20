@@ -66,7 +66,7 @@ export default function MagicSquare() {
           <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-3xl font-bold text-charcoal">Magic Square 🔢</h1>
+          <h1 className="text-3xl font-bold text-charcoal">Magic Square</h1>
         </div>
 
         <Card className="p-6 bg-white border-2 border-rose">
@@ -169,7 +169,7 @@ export default function MagicSquare() {
         <Button variant="ghost" onClick={() => navigate('/')} className="!p-2" title="Kembali ke Beranda">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="text-xl font-bold text-charcoal">Magic Square 🔢</div>
+        <div className="text-xl font-bold text-charcoal">Magic Square</div>
         <div className="text-xl font-bold text-rose font-mono w-16 text-right">
           {formatTime(state.elapsedTime)}
         </div>

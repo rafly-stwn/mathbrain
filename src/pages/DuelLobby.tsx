@@ -3,19 +3,9 @@ import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useDuelStore } from '../stores/duelStore';
 import { useAuthStore } from '../stores/authStore';
+import { games } from '../data/games';
 import type { GameId, Difficulty } from '../types';
 import { Lock, LogIn } from 'lucide-react';
-
-const games: { id: GameId; title: string; emoji: string; color: string }[] = [
-  { id: 'speed-addition', title: 'Speed Addition', emoji: '⚡', color: 'bg-peach' },
-  { id: 'speed-multiplication', title: 'Speed Multiplication', emoji: '✖️', color: 'bg-lemon' },
-  { id: 'kraepelin', title: 'Kraepelin', emoji: '📰', color: 'bg-sky' },
-  { id: 'magic-square', title: 'Magic Square', emoji: '🔢', color: 'bg-rose' },
-  { id: 'sudoku', title: 'Sudoku', emoji: '🧩', color: 'bg-lavender' },
-  { id: 'kenken', title: 'KenKen', emoji: '🧮', color: 'bg-mint' },
-  { id: 'kakuro', title: 'Kakuro', emoji: '➕', color: 'bg-peach' },
-  { id: 'math-scrabble', title: 'Math Scrabble', emoji: '🔤', color: 'bg-lavender' },
-];
 
 export default function DuelLobby() {
   const navigate = useNavigate();
@@ -28,7 +18,7 @@ export default function DuelLobby() {
   const isPreselected = Boolean(preselectedGameId && games.some(g => g.id === preselectedGameId));
 
   const [tab, setTab] = useState<'create' | 'join'>('create');
-  const [selectedGame, setSelectedGame] = useState<GameId>(isPreselected && preselectedGameId ? preselectedGameId : 'speed-addition');
+  const [selectedGame, setSelectedGame] = useState<GameId>(isPreselected && preselectedGameId ? preselectedGameId : 'math-scrabble');
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
   const [selectedDuration, setSelectedDuration] = useState<number>(1200);
   const [joinCode, setJoinCode] = useState('');
@@ -106,10 +96,9 @@ export default function DuelLobby() {
       {isPreselected && currentGameInfo && (
         <div className={`p-4 rounded-2xl flex items-center justify-between border-2 ${currentGameInfo.color} border-charcoal/10 shadow-sm`}>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{currentGameInfo.emoji}</span>
             <div>
               <div className="text-[11px] font-bold text-warmgray uppercase tracking-wider">Tanding Duel</div>
-              <h2 className="text-xl font-black text-charcoal">{currentGameInfo.title}</h2>
+              <h2 className="text-xl font-black text-charcoal">{currentGameInfo.name}</h2>
             </div>
           </div>
           <button
@@ -147,10 +136,9 @@ export default function DuelLobby() {
                   <button
                     key={g.id}
                     onClick={() => setSelectedGame(g.id)}
-                    className={`p-3 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${selectedGame === g.id ? 'border-charcoal ' + g.color : 'border-transparent bg-cream hover:bg-gray-100'}`}
+                    className={`p-3.5 rounded-2xl flex flex-col items-center justify-center min-h-[56px] border-2 transition-all ${selectedGame === g.id ? 'border-charcoal ' + g.color : 'border-transparent bg-cream hover:bg-gray-100'}`}
                   >
-                    <span className="text-2xl">{g.emoji}</span>
-                    <span className="font-bold text-sm text-center">{g.title}</span>
+                    <span className="font-bold text-sm text-center text-charcoal">{g.name}</span>
                   </button>
                 ))}
               </div>

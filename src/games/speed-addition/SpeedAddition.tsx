@@ -80,7 +80,7 @@ const SpeedAddition: React.FC = () => {
               <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
                 <ArrowLeft className="w-6 h-6" />
               </Button>
-              <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Penjumlahan Cepat ⚡</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Penjumlahan Cepat</h1>
             </div>
 
             <Card className="p-6 bg-white border-2 border-peach">
@@ -141,7 +141,7 @@ const SpeedAddition: React.FC = () => {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <h2 className="text-xl font-bold hidden md:block">Penjumlahan Cepat ⚡</h2>
+              <h2 className="text-xl font-bold hidden md:block">Penjumlahan Cepat</h2>
               <div className={`px-4 py-1.5 rounded-full font-bold text-lg transition-colors ${
                 timeLeft < 10 ? 'bg-red-500/30 text-red-600 animate-pulse' : 'bg-[#B8A9E8]/20'
               }`}>

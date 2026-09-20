@@ -113,7 +113,7 @@ export default function Sudoku() {
           <Button variant="ghost" onClick={() => navigate('/')} className="!p-2">
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Sudoku 🧩</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Sudoku</h1>
         </div>
 
         <Card className="p-6 bg-white border-2 border-lavender">
@@ -230,7 +230,7 @@ export default function Sudoku() {
         <button onClick={() => setPhase('setup')} className="p-2 -ml-2 text-secondary hover:text-charcoal rounded-full hover:bg-gray-100" title="Kembali">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <div className="font-bold text-xl tracking-tight text-charcoal flex-1 text-center pr-8">Sudoku 🧩</div>
+        <div className="font-bold text-xl tracking-tight text-charcoal flex-1 text-center pr-8">Sudoku</div>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-8">

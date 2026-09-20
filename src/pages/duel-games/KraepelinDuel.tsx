@@ -128,7 +128,7 @@ export default function KraepelinDuel({
       {/* Top Banner */}
       <div className="w-full flex items-center justify-between pb-3 border-b border-lavender/15 mb-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky/15 text-sky-800 rounded-pill text-xs font-bold">
-          <span>Kraepelin Test 📰</span>
+          <span>Tes Kraepelin</span>
           <span>•</span>
           <span className="capitalize">{difficulty}</span>
         </div>

@@ -63,7 +63,7 @@ export default function MathScrabble() {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Math Scrabble 🔤</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Math Scrabble</h1>
         </div>
 
         <div className="bg-white rounded-card shadow-card p-6 border-2 border-lavender/40 text-center">
@@ -173,7 +173,7 @@ export default function MathScrabble() {
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali</span>
         </button>
-        <span className="font-black text-charcoal text-sm">Math Scrabble 🔤</span>
+        <span className="font-black text-charcoal text-sm">Math Scrabble</span>
         <button
           onClick={() => startGame(1200)}
           className="flex items-center gap-1 text-warmgray hover:text-charcoal text-xs font-bold p-1"
